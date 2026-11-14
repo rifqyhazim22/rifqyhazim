@@ -1,0 +1,26 @@
+# dependencies & build output
+node_modules/
+dist/
+.vite/
+
+# env & secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# test / QA output
+reports/
+playwright-report/
+test-results/
+*.report.json
+*.report.html
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

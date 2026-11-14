@@ -1,0 +1,223 @@
+// Build-time site plugin:
+//  - prerenders the full content into the HTML for / (Indonesian) and /en/ (English), so search engines and
+//    no-JS visitors get every name, project, timeline entry and contact link without running JavaScript;
+//  - writes the per-language SEO head (canonical, hreflang, Open Graph/Twitter, JSON-LD, verification metas);
+//  - emits robots.txt, sitemap.xml, site.webmanifest, llms.txt, 404.html and the optional IndexNow key file;
+//  - keeps vercel.json in sync with security-headers.js, and serves 404.html + the headers in `vite preview`.
+import fs from 'node:fs';
+import path from 'node:path';
+import { parseHTML } from 'linkedom';
+import { SITE_URL, GOOGLE_SITE_VERIFICATION, BING_SITE_VERIFICATION, YANDEX_VERIFICATION, INDEXNOW_KEY } from './site.config.js';
+import { securityHeaders, vercelConfig } from './security-headers.js';
+import { dict, applyDict, SEO } from './src/i18n.js';
+import { renderStatic } from './src/render-content.js';
+import { PROJECTS, JOURNEY, CONTACT, FLAGS, DOWNLOADS } from './src/content.js';
+
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
+const url = (p = '/') => SITE_URL + p;
+const PAGE = { id: '/', en: '/en/' };
+// Keyword strategy (KEYWORDS.md): topics Rifqy verifiably works on, in English (schema.org text values).
+// Every item maps to the verified content: tools t1–t6, project A context, journey role "Prompt & Context Engineer".
+const KNOWS_ABOUT = ['Shopee Ads (Product Ads)', 'Tokopedia/TikTok GMV Max', 'Marketplace advertising', 'E-commerce operations', 'ROAS analysis from invoices',
+  'AI agent orchestration', 'Prompt engineering', 'Context engineering', 'Automated routines', 'Google Sheets', 'Full-stack web development'];
+const PROJECT_KEYWORDS = { a: 'Shopee Ads, Tokopedia/TikTok GMV Max, marketplace advertising, ROAS, e-commerce', b: 'AI agent orchestration, AI agent team, automated routines, Google Sheets, marketplace operations', c: 'full-stack e-commerce, online pharmacy marketplace, realtime chat' };
+const PERSON_DESC = { id: 'Ads & E-commerce Specialist (spesialis iklan marketplace: iklan Shopee dan GMV Max Tokopedia/TikTok) dan AI Agent Orchestrator, berbasis di Jakarta, Indonesia.', en: 'Ads & E-commerce Specialist (marketplace ads specialist: Shopee Ads and Tokopedia/TikTok GMV Max) and AI Agent Orchestrator, based in Jakarta, Indonesia.' };
+// Location: city + country only (general location only). Never a street, postal code or phone.
+const LOCATION = { locality: 'Jakarta', country: 'ID', label: 'Jakarta, Indonesia' };
+const OG_IMG = { id: '/og-image.png', en: '/og-image-en.png' }; // share images (1200×630), one per language
+const attr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const sameAs = CONTACT.links.filter((x) => !x.flag || FLAGS[x.flag]).map((x) => x.href);
+
+function jsonLd(l) {
+  const page = url(PAGE[l]), person = url('/#person'), website = url('/#website'), inLang = l === 'en' ? 'en-US' : 'id-ID';
+  const projects = ['a', 'b', 'c'].map((k) => {
+    const p = PROJECTS[k], o = { '@type': 'CreativeWork', '@id': `${page}#project-${k}`, name: p[l].title, description: p[l].lead, dateCreated: p.year, inLanguage: inLang, keywords: PROJECT_KEYWORDS[k], creator: { '@id': person } };
+    if (p.links?.length) { o.url = p.links[0][1]; o.sameAs = p.links.slice(1).map((x) => x[1]); }
+    return o;
+  });
+  const graph = [
+    { '@type': 'WebSite', '@id': website, url: url('/'), name: 'Rifqy Hazim', inLanguage: ['id-ID', 'en-US'], publisher: { '@id': person } },
+    { '@type': 'ProfilePage', '@id': `${page}#profilepage`, url: page, name: SEO[l].title, description: SEO[l].desc, inLanguage: inLang, isPartOf: { '@id': website }, mainEntity: { '@id': person }, about: { '@id': person }, dateModified: BUILD_DATE, hasPart: projects.map((p) => ({ '@id': p['@id'] })) },
+    {
+      '@type': 'Person', '@id': person, name: 'Rifqy Hazim', url: url('/'), image: url(OG_IMG[l]),
+      description: PERSON_DESC[l], address: { '@type': 'PostalAddress', addressLocality: LOCATION.locality, addressCountry: LOCATION.country }, jobTitle: ['Ads & E-commerce Specialist', 'AI Agent Orchestrator'], email: `mailto:${CONTACT.email}`,
+      worksFor: { '@type': 'Organization', name: JOURNEY.find((j) => j.now).org },
+      alumniOf: { '@type': 'CollegeOrUniversity', name: 'UIN Syarif Hidayatullah Jakarta' },
+      knowsAbout: KNOWS_ABOUT,
+      sameAs,
+    },
+    ...projects,
+  ];
+  return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+}
+
+function headHTML(l) {
+  const s = SEO[l], other = l === 'en' ? 'id' : 'en';
+  const verif = [['google-site-verification', GOOGLE_SITE_VERIFICATION], ['msvalidate.01', BING_SITE_VERIFICATION], ['yandex-verification', YANDEX_VERIFICATION]]
+    .filter(([, v]) => v).map(([n, v]) => `<meta name="${n}" content="${attr(v)}" />`);
+  return [
+    '<!-- seo:start (generated by vite-plugin-site.js from site.config.js) -->',
+    `<meta name="description" content="${attr(s.desc)}" />`,
+    '<meta name="author" content="Rifqy Hazim" />',
+    '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />',
+    '<meta name="theme-color" content="#F0EBE3" media="(prefers-color-scheme: light)" />',
+    '<meta name="theme-color" content="#1A1714" media="(prefers-color-scheme: dark)" />',
+    `<link rel="canonical" href="${url(PAGE[l])}" />`,
+    `<link rel="alternate" hreflang="id" href="${url(PAGE.id)}" />`,
+    `<link rel="alternate" hreflang="en" href="${url(PAGE.en)}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${url(PAGE.id)}" />`,
+    '<link rel="manifest" href="/site.webmanifest" />',
+    '<meta property="og:type" content="profile" />',
+    '<meta property="og:site_name" content="Rifqy Hazim" />',
+    '<meta property="profile:first_name" content="Rifqy" />',
+    '<meta property="profile:last_name" content="Hazim" />',
+    `<meta property="og:title" content="${attr(s.title)}" />`,
+    `<meta property="og:description" content="${attr(s.ogDesc)}" />`,
+    `<meta property="og:url" content="${url(PAGE[l])}" />`,
+    `<meta property="og:image" content="${url(OG_IMG[l])}" />`,
+    '<meta property="og:image:type" content="image/png" />',
+    '<meta property="og:image:width" content="1200" />',
+    '<meta property="og:image:height" content="630" />',
+    `<meta property="og:image:alt" content="${attr(s.ogAlt)}" />`,
+    `<meta property="og:locale" content="${s.locale}" />`,
+    `<meta property="og:locale:alternate" content="${SEO[other].locale}" />`,
+    '<meta name="twitter:card" content="summary_large_image" />',
+    `<meta name="twitter:title" content="${attr(s.title)}" />`,
+    `<meta name="twitter:description" content="${attr(s.ogDesc)}" />`,
+    `<meta name="twitter:image" content="${url(OG_IMG[l])}" />`,
+    `<meta name="twitter:image:alt" content="${attr(s.ogAlt)}" />`,
+    ...verif,
+    `<script type="application/ld+json">${jsonLd(l)}</script>`,
+    '<!-- seo:end -->',
+  ].map((x) => '  ' + x).join('\n');
+}
+
+/** Full prerender of one language from the built index.html. */
+function prerender(html, l) {
+  const { document } = parseHTML(html);
+  applyDict(document, l);
+  renderStatic(document, l);
+  document.title = SEO[l].title;
+  let out = '<!doctype html>\n' + document.documentElement.outerHTML;
+  out = out.replace(/\n?\s*<!-- seo:start[\s\S]*?<!-- seo:end -->/, '');
+  out = out.replace('</title>', '</title>\n' + headHTML(l));
+  return out;
+}
+
+const robots = () => {
+  const bots = ['Googlebot', 'Bingbot', 'DuckDuckBot', 'YandexBot', 'Applebot', 'GPTBot', 'OAI-SearchBot', 'PerplexityBot', 'ClaudeBot', 'Google-Extended'];
+  return `# Rifqy Hazim: search engines and AI assistants are welcome to read and cite this site.\n${bots.map((b) => `User-agent: ${b}`).join('\n')}\nAllow: /\n\nUser-agent: *\nAllow: /\n\nSitemap: ${url('/sitemap.xml')}\n`;
+};
+const sitemap = () => {
+  const alt = Object.entries(PAGE).map(([l, p]) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${url(p)}"/>`).join('\n') + `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${url(PAGE.id)}"/>`;
+  const u = (p, pr) => `  <url>\n    <loc>${url(p)}</loc>\n    <lastmod>${BUILD_DATE}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>${pr}</priority>\n${alt}\n  </url>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${u(PAGE.id, '1.0')}\n${u(PAGE.en, '0.9')}\n</urlset>\n`;
+};
+const manifest = () => JSON.stringify({
+  name: 'Rifqy Hazim · Ads & E-commerce Specialist · AI Agent Orchestrator', short_name: 'Rifqy Hazim',
+  description: SEO.id.desc, lang: 'id', start_url: '/', scope: '/', display: 'browser',
+  background_color: '#F0EBE3', theme_color: '#0F6E6A',
+  icons: [
+    { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+    { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+  ],
+}, null, 2);
+const llms = () => {
+  const en = dict.en, P = ['a', 'b', 'c'].map((k) => PROJECTS[k]);
+  const dl = DOWNLOADS.filter((d) => FLAGS[d.flag]).map((d) => `- [${d.label.en} (PDF)](${url(d.href)})`);
+  return `# Rifqy Hazim\n\n> Ads & E-commerce Specialist · AI Agent Orchestrator. ${en['now.s1']}${FLAGS.freelanceLine ? ' ' + en['now.s2'] : ''}\n\n`
+    + `Based in: ${LOCATION.label}\n\n`
+    + `Website: ${url('/')} (Indonesian) · ${url('/en/')} (English)\n\n## Expertise\n${KNOWS_ABOUT.map((k) => `- ${k}`).join('\n')}\n\n## Selected projects\n`
+    + P.map((p) => `- **${p.en.title}** (${p.year}): ${p.en.lead}${p.links ? ' ' + p.links.map(([n, h]) => `[${n}](${h})`).join(' · ') : ''}`).join('\n')
+    + `\n\n## How I work\n` + ['w1', 'w2', 'w3'].map((k) => `- **${en[k + '.h']}**: ${en[k + '.p']}`).join('\n')
+    + `\n\n## Journey\n` + JOURNEY.map((j) => `- ${j.yr.en}: ${j.org}${j.role ? ` (${j.role.en})` : ''}`).join('\n')
+    + `\n\n## Contact & profiles\n- Email: ${CONTACT.email}\n` + CONTACT.links.filter((x) => !x.flag || FLAGS[x.flag]).map((x) => `- [${x.label}](${x.href})`).join('\n')
+    + (dl.length ? '\n' + dl.join('\n') : '') + '\n';
+};
+const notFound = () => `<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>404 · Halaman tidak ditemukan / Page not found · Rifqy Hazim</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <style>
+    :root { color-scheme: light dark; --bg:#F0EBE3; --fg:#1A1916; --muted:#5E5850; --teal:#0F6E6A; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#1A1714; --fg:#F0EBE3; --muted:#B4AAA0; --teal:#4CB8B0; } }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width:560px; padding:32px 24px; }
+    .code { font:600 13px/1 ui-monospace, monospace; letter-spacing:.14em; color:var(--teal); }
+    h1 { font:400 clamp(40px, 8vw, 64px)/1.05 Georgia, serif; margin:14px 0 12px; letter-spacing:-.02em; }
+    p { color:var(--muted); margin:0 0 6px; }
+    nav { margin-top:28px; display:flex; gap:12px; flex-wrap:wrap; }
+    a { display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border-radius:999px; text-decoration:none; font-weight:600; border:1.5px solid var(--teal); color:var(--teal); }
+    a.primary { background:var(--teal); color:var(--bg); }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="code">&lt;404&gt;</p>
+    <h1>Halaman ini tidak ada.</h1>
+    <p>Alamatnya mungkin salah ketik atau sudah dipindah.</p>
+    <p lang="en">This page doesn't exist. The address may be mistyped or the page has moved.</p>
+    <nav>
+      <a class="primary" href="/">Ke beranda</a>
+      <a href="/en/" lang="en">English home</a>
+      <a href="mailto:${CONTACT.email}">${CONTACT.email}</a>
+    </nav>
+  </main>
+</body>
+</html>
+`;
+
+export default function sitePlugin() {
+  let outDir = 'dist';
+  return {
+    name: 'rh-site',
+    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir); },
+    buildStart() {
+      const v = JSON.stringify(vercelConfig(), null, 2) + '\n';
+      const f = path.resolve('vercel.json');
+      if (!fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== v) fs.writeFileSync(f, v);
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        if (!/index\.html$/.test(ctx.filename) || /logo\.html$/.test(ctx.filename)) return html;
+        return prerender(html, 'id');
+      },
+    },
+    writeBundle() {
+      const idx = path.join(outDir, 'index.html');
+      if (!fs.existsSync(idx)) return;
+      const emit = (fileName, source) => { const f = path.join(outDir, fileName); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, source); };
+      emit('en/index.html', prerender(fs.readFileSync(idx, 'utf8'), 'en'));
+      emit('robots.txt', robots());
+      emit('sitemap.xml', sitemap());
+      emit('site.webmanifest', manifest());
+      emit('llms.txt', llms());
+      emit('404.html', notFound());
+      if (INDEXNOW_KEY) {
+        if (!/^[A-Za-z0-9-]{8,128}$/.test(INDEXNOW_KEY)) this.error('INDEXNOW_KEY must be 8-128 chars of a-z, A-Z, 0-9 or "-"');
+        emit(`${INDEXNOW_KEY}.txt`, INDEXNOW_KEY);
+      }
+    },
+    configurePreviewServer(server) {
+      // security headers on every preview response (Vite only adds preview.headers to static files)
+      const h = securityHeaders(false);
+      server.middlewares.use((req, res, next) => { for (const k in h) res.setHeader(k, h[k]); next(); });
+      // after the static + html middlewares: unknown paths get the real 404 page with a 404 status (like Vercel)
+      return () => server.middlewares.use((req, res, next) => {
+        const p = decodeURIComponent((req.url || '/').split('?')[0]);
+        if (fs.existsSync(path.join(outDir, p)) && fs.statSync(path.join(outDir, p)).isFile()) return next(); // /index.html, /en/index.html
+        if (!p.endsWith('/') && fs.existsSync(path.join(outDir, p, 'index.html'))) { res.statusCode = 308; res.setHeader('Location', p + '/'); return res.end(); } // /en -> /en/ (as vercel.json)
+        const f = path.join(outDir, '404.html');
+        res.statusCode = 404; res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.end(fs.existsSync(f) ? fs.readFileSync(f) : 'Not found');
+      });
+    },
+  };
+}
