@@ -66,7 +66,7 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 .dot { width:8px; height:8px; border-radius:999px; background:var(--mint); box-shadow:0 0 0 0 var(--mint); animation:pulse 2.2s infinite; }
 @keyframes pulse { 0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--mint) 60%,transparent)} 80%,100%{box-shadow:0 0 0 10px transparent} }
 .identity { font-size:clamp(64px,8vw,104px); line-height:.88; letter-spacing:-0.05em; margin:0 0 22px; }
-.identity .line { display:block; overflow:hidden; padding-bottom:.06em; }
+.identity .line { display:block; overflow:hidden; padding-bottom:.24em; margin-bottom:-.18em; } /* room for descenders (g, y, p) inside the reveal clip; net spacing unchanged (.06em) */
 .identity .line > span { display:inline-block; }
 .positioning { font-weight:600; font-size:16px; margin:0 0 10px; }
 .lead { font-size:18px; color:var(--muted); max-width:30ch; margin:0 0 26px; }
@@ -769,3 +769,47 @@ a.dl-chip:hover { border-color:var(--teal); color:var(--teal); }
 
 /* City-level location only (no street or postal code) */
 .contact-loc { margin:-14px 0 22px; font-size:13px; letter-spacing:.04em; color:var(--muted); }
+
+/* Tablet portrait (iPad Air/Pro and similar, 601–1024 px wide): two-column copy so the hero uses the width,
+   bigger type, and the desk scene fills the rest of the first screen instead of sitting below the fold */
+@media (min-width: 601px) and (max-width: 1024px) and (orientation: portrait) and (min-height: 760px) {
+  .hero { min-height:calc(100svh - 80px); align-items:stretch; }
+  .hero-split { display:flex; flex-direction:column; align-items:stretch; gap:clamp(8px, 2svh, 24px); padding-top:clamp(28px, 4svh, 48px); padding-bottom:16px; }
+  .hero-copy { display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,1fr); column-gap:clamp(28px, 5vw, 56px);
+    grid-template-areas:"avail avail" "title pos" "title lead" "title chips" "time chips"; align-items:start; }
+  .hero-copy .avail { grid-area:avail; }
+  .hero-copy .identity { grid-area:title; align-self:center; font-size:clamp(84px, 13.2vw, 132px); margin:0; }
+  .hero-copy .positioning { grid-area:pos; font-size:17px; margin-top:10px; }
+  .hero-copy .lead { grid-area:lead; max-width:none; font-size:clamp(17px, 2.2vw, 20px); margin-bottom:22px; }
+  .hero-copy .version-chips { grid-area:chips; align-self:start; }
+  .hero-copy .time-card { grid-area:time; margin-top:16px; }
+  .hero-stage { flex:1 1 auto; min-height:clamp(380px, 44svh, 640px); }
+  .lite .hero-stage { height:auto; margin:0 calc(-1 * var(--page-pad)); }
+  .lite .hero-canvas { position:absolute; inset:0; pointer-events:auto; touch-action:pan-y; }
+  .lite .scene2d, .lite .scene-hint { display:none; }
+  .lite.three-pending .scene2d { display:block; width:min(100%, 600px); }
+  .no-webgl .hero-stage { display:flex; align-items:center; justify-content:center; }
+  .no-webgl .scene2d { width:min(100%, 600px); margin:0 auto; }
+  .scene-hint { display:none; }
+}
+/* Tablet landscape (touch, 901–1366 px wide, not phone-short): larger desk stage, type sized to the height */
+@media (min-width: 901px) and (max-width: 1366px) and (orientation: landscape) and (pointer: coarse) and (min-height: 600px) {
+  .hero-split { grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:32px; padding-top:24px; padding-bottom:56px; }
+  .identity { font-size:clamp(72px, 11svh, 104px); }
+  .hero-stage { min-height:clamp(420px, 62svh, 600px); }
+  .lite .hero-stage { margin-right:calc(-1 * var(--page-pad)); }
+  .lite.three-pending .scene2d { width:min(100%, 600px); }
+}
+
+
+/* 3D hero blends into the page: transparent canvas with soft faded edges, so the platform never shows a hard cut */
+.hero-canvas, .scene2d {
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 7%, #000 84%, transparent 100%), linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to bottom, transparent 0, #000 7%, #000 84%, transparent 100%), linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-composite:intersect;
+}
+.has-world .hero-canvas { /* desktop: canvas spans the whole hero; only fade where the scene meets the edges (bottom, right) */
+  -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 86%, transparent 100%), linear-gradient(to right, #000 0, #000 95%, transparent 100%);
+  mask-image:linear-gradient(to bottom, #000 0, #000 86%, transparent 100%), linear-gradient(to right, #000 0, #000 95%, transparent 100%);
+}

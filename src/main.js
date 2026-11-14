@@ -503,6 +503,8 @@ async function boot() {
     onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, rotateX: 0, scale: 1, duration: 0.9, ease: 'power3.out', stagger: 0.1, overwrite: 'auto' }),
     onLeave: (els) => gsap.set(els, { opacity: 1, y: 0, rotateX: 0, scale: 1, overwrite: 'auto' }),
     onEnterBack: (els) => gsap.to(els, { opacity: 1, y: 0, rotateX: 0, scale: 1, duration: 0.4, overwrite: 'auto' }),
+    // scrolling back up past the start hides them again, so the reveal replays on the next scroll down
+    onLeaveBack: (els) => gsap.to(els, { opacity: 0, y: 28, duration: 0.35, ease: 'power2.in', stagger: 0.04, overwrite: 'auto' }),
   });
   if (!root.classList.contains('has-world')) {
     // fallback: studio cards are normal reveal cards
@@ -510,13 +512,13 @@ async function boot() {
   }
   gsap.utils.toArray('.sec-title').forEach((el) => {
     if (el.closest('.stage-studio') && root.classList.contains('has-world')) return;
-    gsap.from(el.querySelectorAll('.rule'), { scaleX: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play complete none none' } });
-    gsap.from(el.querySelector('h2'), { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play complete none none' } });
+    gsap.from(el.querySelectorAll('.rule'), { scaleX: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play none none reverse' } });
+    gsap.from(el.querySelector('h2'), { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play none none reverse' } });
   });
   // Project cards: thumb scales 0.8 -> 1 while the art settles 1.2 -> 1 (0.4s power1.out)
   $$('#proyek .card').forEach((card) => {
-    gsap.fromTo($('.thumb', card), { scale: 0.86 }, { scale: 1, duration: 0.5, ease: 'power1.out', scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play complete none reset' } });
-    gsap.fromTo($('.thumb > *', card), { scale: 1.2 }, { scale: 1, duration: 0.5, ease: 'power1.out', scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play complete none reset' } });
+    gsap.fromTo($('.thumb', card), { scale: 0.86 }, { scale: 1, duration: 0.5, ease: 'power1.out', scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play none none reverse' } });
+    gsap.fromTo($('.thumb > *', card), { scale: 1.2 }, { scale: 1, duration: 0.5, ease: 'power1.out', scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play none none reverse' } });
   });
   gsap.set('#proyek .grid3 > .card, .no-webgl .grid3 > .card', { rotateX: -18, transformOrigin: '50% 100%' });
   ScrollTrigger.create({ trigger: '.contact', start: 'top bottom', end: 'bottom top', onUpdate: (st) => gsap.to('.sticker', { rotate: st.progress * 120, duration: 0.4, overwrite: true }) });

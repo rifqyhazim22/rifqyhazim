@@ -230,10 +230,14 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
     agen: { px: 1.4, py: 3.1, pz: 14.6, lx: 0.8, ly: 1.3, lz: 0, off: -0.235, fov: 27 },
     scroll: { px: 0, py: 13, pz: 17, lx: 0, ly: 0.2, lz: 0, off: -0.1, fov: 34 },
   };
-  if (lite) { // narrower frame: pull back a little, no side offset
-    const asp = hero.clientWidth / Math.max(1, hero.clientHeight), d = Math.min(22, Math.max(13, 21.5 / asp)); // keep the whole platform in frame
-    Object.assign(poses.idle, { pz: d, py: 3.8, ly: 1.45 }); Object.assign(poses.iklan, { px: -1.2, pz: d * 0.84 }); Object.assign(poses.agen, { px: 1.2, pz: d * 0.84 });
+  // lite: narrower frame, pull back so the whole platform (plus a margin for the soft edge fade) stays in frame; no side offset.
+  // Re-framed on every resize (orientation change, Safari toolbar show/hide).
+  function frameLite() {
+    const w = hero.clientWidth, asp = w / Math.max(1, hero.clientHeight), phone = innerWidth <= 600; // phones keep their original framing
+    const d = phone ? Math.min(22, Math.max(13, 21.5 / asp)) : Math.min(24, Math.max(14, 23.5 / asp));
+    Object.assign(poses.idle, { px: 0, pz: d, py: 3.8, ly: 1.45 }); Object.assign(poses.iklan, { px: -1.2, pz: d * (phone ? 0.84 : 0.86) }); Object.assign(poses.agen, { px: 1.2, pz: d * (phone ? 0.84 : 0.86) });
   }
+  if (lite) frameLite();
   const rig = { ...poses.intro };
   let focus = null, active = 'iklan', scrollP = 0, intro = true;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
@@ -244,6 +248,7 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     wide = !lite && w > 900; vw = w; vh = h;
+    if (lite) { frameLite(); if (!intro && !(flight && flight.isActive())) Object.assign(rig, poses[focus || 'idle']); }
   }
   new ResizeObserver(resize).observe(hero);
   resize();
