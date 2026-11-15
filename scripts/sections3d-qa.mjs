@@ -1,8 +1,8 @@
 // 3D sections QA: screenshots of every section's 3D corner (desktop 1440 / phone 390, light / dark) plus
 // forward/reverse determinism of the camera (same scroll position down and back up = same pose).
-// Needs `npm run preview`. Screenshots go to /workspace/shots/3d/.
+// Needs `npm run preview`. Screenshots go to /workspace/shots/3d-<device>-<scheme>-<section>.png.
 import { chromium } from 'playwright';
-const O = '/workspace/shots/3d/'; const URL = process.env.QA_URL || 'http://127.0.0.1:4173';
+const O = process.env.SHOTS || '/workspace/shots/3d-'; const URL = process.env.QA_URL || 'http://127.0.0.1:4173';
 const only = process.argv[2]; // optional: desk | phone
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const errs = []; const res = [];
@@ -28,7 +28,7 @@ async function marks(p) {
     const m = [];
     const k = document.querySelector('#kerja'); if (document.documentElement.classList.contains('has-world')) m.push(['kerja', top(k) + k.offsetHeight * 0.55 - vh]);
     document.querySelectorAll('[data-s3d]').forEach((el) => { m.push([el.dataset.s3d, Math.max(0, top(el) - vh * 0.1)]); });
-    const f = document.querySelector('#foto'); m.push(['foto-zoom', top(f) + vh * 0.12]);
+    const f = document.querySelector('#foto'); m.push(['foto-wide', top(f) - vh * 0.75], ['foto-zoom', top(f) + vh * 0.12]);
     if (document.documentElement.classList.contains('has-world')) { const c = document.querySelector('#ngobrol'); m.push(['ngobrol', top(c) + (c.offsetHeight - vh) / 2]); }
     return m;
   });

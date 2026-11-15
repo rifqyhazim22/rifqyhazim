@@ -197,7 +197,7 @@ export function buildStations({ scene, lite, journeyCount = 6, photoUrl }) {
     const marker = shadow(new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 20), std(PAL.teal, 0.25, 0.3))); path.add(marker);
     stations.jejak = {
       x: X,
-      pose(k, o) { const d = k * 1.2; o.P.set(X + 0.4 + d, 5.6, 14.2 - ss(-1, 0, k) * 1.4); o.L.set(X + 0.4 + d * 0.5, 3.7, -3); },
+      pose(k, o) { const d = k * 1.2; o.P.set(X + 0.4 + d, 6.0, 15.6 - ss(-1, 0, k) * 1.4); o.L.set(X + 0.4 + d * 0.5, 3.95, -3); }, // pulled back so the flag on the top step stays in frame
       update(k, t) {
         books.forEach((b, i) => { const p = ss(-1 + (i % 9) * 0.03, -0.45 + (i % 9) * 0.03, k); b.position.z = b.userData.home.z + (1 - p) * 1.2; b.rotation.z = (1 - p) * 0.25; });
         const climb = ss(-0.6, 0.35, k) * (n - 1);
