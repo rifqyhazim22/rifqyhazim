@@ -42,7 +42,7 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) {
     const ms = await marks(p);
     const pose = () => p.evaluate(() => { const c = window.__world.cam(); return c.map((v) => Math.round(v * 1000) / 1000).join(','); });
     // a slow software renderer can lag the scrub by seconds: wait until the camera stops moving (max 20 s)
-    const steady = async () => { let a = await pose(); for (let i = 0; i < 40; i++) { await p.waitForTimeout(500); const c = await pose(); if (c === a) return c; a = c; } return a; };
+    const steady = async () => { let a = await pose(), same = 0; for (let i = 0; i < 50; i++) { await p.waitForTimeout(500); const c = await pose(); same = c === a ? same + 1 : 0; if (same >= 3) return c; a = c; } return a; }; // 3 equal reads: a starved frame loop can look still for a moment
     // software GL can stall the compositor for a while after a long jump: give the shot time, and retake a blank (background-only) frame
     const shot = async (path) => { await steady(); await p.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))).catch(() => {}); for (let i = 0; i < 3; i++) { const buf = await p.screenshot({ path, timeout: 90000 }).catch(() => null); if (buf && buf.length > 20000) return; await settle(p, 3000); } };
     for (const [name, y] of ms) { await to(p, y); await settle(p); await shot(`${O}${dev}-${scheme}-${name}.png`); }
