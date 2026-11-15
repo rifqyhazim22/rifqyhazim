@@ -3,7 +3,7 @@
 // Frames go to /tmp/vframes; turn them into an mp4 with ffmpeg. Usage: node scripts/scroll-video.mjs [light|dark] [steps]
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
-const dir = '/tmp/vframes'; mkdirSync(dir, { recursive: true });
+const dir = process.env.VFRAMES || '/tmp/vframes'; mkdirSync(dir, { recursive: true });
 const b = await chromium.launch({ args: ['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
 const W = Number(process.env.VW || 1024), H = Number(process.env.VH || 640), scheme = process.argv[2] || 'light';
 const ctx = await b.newContext({ viewport: { width: W, height: H }, colorScheme: scheme });
