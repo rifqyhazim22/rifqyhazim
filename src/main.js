@@ -13,7 +13,8 @@ import Lenis from 'lenis';
 import { initLang, setLang, onLang, t, lang } from './i18n.js';
 import { initCursor } from './cursor.js';
 import { ADS, AGENT, spriteSVG, LAMP_SVG } from './sprites.js';
-import { setSound, isOn, tick, whoosh } from './sound.js';
+import { setSound, isOn, tick, whoosh, setMusicMode, isMusicPlaying } from './sound.js';
+import { initUpdates, takeRestore } from './update.js';
 import { initClocks } from './clock.js';
 import { initContent, fillProject, project } from './render-content.js';
 
@@ -45,6 +46,7 @@ onLang(syncSticker); syncSticker();
 let scene = null, world = null;
 function applyTheme(mode, instant) {
   root.dataset.theme = mode;
+  setMusicMode(mode === 'dark' ? 'night' : 'day'); // cafe music follows the theme (day loop / night loop)
   scene?.setTheme(mode === 'dark', instant);
   world?.setTheme(mode === 'dark');
 }
@@ -80,15 +82,18 @@ sysDark.addEventListener('change', () => { if (themePref === 'auto') setThemePre
 addEventListener('resize', syncSwitches); onLang(() => requestAnimationFrame(syncSwitches)); document.fonts.ready.then(syncSwitches);
 setThemePref('auto', true);
 
-// ---------- Sound (off by default)
-const soundBtn = $('#soundBtn');
-soundBtn.addEventListener('click', () => {
-  const v = !isOn(); setSound(v);
-  soundBtn.setAttribute('aria-pressed', String(v));
-  soundBtn.dataset.i18nAria = v ? 'sound.off' : 'sound.on';
-  soundBtn.setAttribute('aria-label', t(soundBtn.dataset.i18nAria));
-  tick(v ? 990 : 440);
-});
+// ---------- Sound + cafe music (off by default; header button on desktop, its twin next to the menu button on mobile)
+const soundBtns = $$('[data-sound-btn]');
+function syncSoundBtns() {
+  const v = isOn();
+  soundBtns.forEach((b) => { b.setAttribute('aria-pressed', String(v)); b.dataset.i18nAria = v ? 'sound.off' : 'sound.on'; b.setAttribute('aria-label', t(b.dataset.i18nAria)); b.title = t(b.dataset.i18nAria); });
+}
+soundBtns.forEach((b) => b.addEventListener('click', () => { const v = !isOn(); setSound(v); syncSoundBtns(); tick(v ? 990 : 440); }));
+onLang(syncSoundBtns);
+
+// ---------- Auto-update: a new deploy is picked up without a manual refresh (see update.js)
+const restore = takeRestore();
+initUpdates({ t, onLang, isBusy: () => !!openKey || menuOpen || wiping, isPlaying: isMusicPlaying });
 
 // ---------- 2D fallback art
 $('#spriteAds').innerHTML = spriteSVG(ADS, 'Versi Iklan');
@@ -113,6 +118,19 @@ const jump = (y) => { if (lenis) lenis.scrollTo(y, { immediate: true, force: tru
 // ---------- Version chips
 const chips = $$('.vchip');
 function markChip(v) { chips.forEach((c) => { const on = c.dataset.version === v; c.classList.toggle('is-active', on); c.setAttribute('aria-pressed', String(on)); }); }
+// The visitor's pick (chip click or tapping a character) holds while they read on; scrolling back up to the hero
+// after leaving it puts the desk back to its first-load state (Versi Iklan, camera on the wide shot) to pick again.
+const DEFAULT_V = chips.find((c) => c.classList.contains('is-active'))?.dataset.version || 'iklan';
+let picked = false;
+/** The visitor picks a version (chip, character tap, or dropping a character in the middle on touch). */
+function pick(v, sound = 700) { picked = true; markChip(v); scene?.setActive(v); scene?.setFocus(v); scene?.hello(v); tick(sound); }
+function resetPick() {
+  if (!picked && chips.find((c) => c.classList.contains('is-active'))?.dataset.version === DEFAULT_V) return;
+  picked = false;
+  markChip(DEFAULT_V);
+  cursor?.setExternal(null);
+  scene?.reset();
+}
 
 // ---------- Nav: active section, sliding coloured pill
 const header = $('.site-header');
@@ -147,7 +165,8 @@ const navKey = { sekarang: 'nav.now', kerja: 'nav.work', proyek: 'nav.projects',
 function targetY(id) {
   const el = document.getElementById(id);
   if (id === 'sekarang') return 0;
-  const top = el.getBoundingClientRect().top + scrollY;
+  // layout position: ignore a section's own entrance offset (it is translated down until it has come in)
+  const top = el.getBoundingClientRect().top + scrollY - (Number(gsap.getProperty(el, 'y')) || 0);
   if (id === 'kerja' && root.classList.contains('has-world')) return top + (el.offsetHeight - innerHeight) * 0.62; // land mid-scan, cards visible
   return top - 70;
 }
@@ -220,7 +239,7 @@ addEventListener('resize', () => { if (menuOpen && innerWidth > 900) setMenu(fal
 const tapLayer = $('#tapLayer');
 if (!matchMedia('(pointer: fine)').matches) {
   addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' || reduced) return;
+    if (e.pointerType === 'mouse' || reduced || root.classList.contains('touch-fx')) return; // touch.js draws its own
     const target = e.target.closest('a, button, [data-project], .vchip, canvas');
     const r = document.createElement('span'); r.className = 'tap-ripple' + (target ? ' on-target' : '');
     r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px'; tapLayer.append(r);
@@ -368,7 +387,7 @@ async function load3D() {
   try {
     scene = mod.createScene({
       canvas: $('#heroCanvas'), hero: lite ? $('.hero-stage') : $('.hero'), bubble: $('#bubble'), lite,
-      onCharTap: (k) => { const v = k || (chips.find((c) => c.classList.contains('is-active'))?.dataset.version === 'iklan' ? 'agen' : 'iklan'); markChip(v); scene.setActive(v); scene.setFocus(v); scene.hello(v); tick(v === 'iklan' ? 620 : 840); },
+      onCharTap: (k) => { const v = k || (chips.find((c) => c.classList.contains('is-active'))?.dataset.version === 'iklan' ? 'agen' : 'iklan'); pick(v, v === 'iklan' ? 620 : 840); },
       onCharHover: (k) => { cursor?.setExternal(k); scene.setFocus(k); if (k) { markChip(k); tick(k === 'iklan' ? 620 : 840); } },
     });
   } catch { fallback2D(); return; }
@@ -467,14 +486,30 @@ async function boot() {
     const leave = () => scene?.setFocus(null);
     c.addEventListener('pointerenter', enter); c.addEventListener('focus', enter);
     c.addEventListener('pointerleave', leave); c.addEventListener('blur', leave);
-    c.addEventListener('click', () => { markChip(v); scene?.setActive(v); scene?.setFocus(v); scene?.hello(v); tick(); });
+    c.addEventListener('click', () => pick(v, undefined));
   });
+  // Pick reset: armed once the hero is mostly scrolled away, fired on the way back in (works with or without 3D,
+  // and with reduced motion, where the scene reset is instant).
+  // (plain scroll check rather than onEnterBack: it survives the layout refresh when the 3D scene arrives or falls back)
+  {
+    const heroEl = $('.hero'); let armed = false;
+    const check = () => {
+      const r = heroEl.getBoundingClientRect(), passed = r.top + r.height * 0.55 < 0;
+      if (passed) armed = true; else if (armed) { armed = false; resetPick(); }
+    };
+    addEventListener('scroll', check, { passive: true });
+  }
+
+  // touch-screen extras (ripples, swipe/peek cards, draggable characters, sticker spin, throwable chips)
+  if (!reduced && (coarse || matchMedia('(any-pointer: coarse)').matches) && !matchMedia('(pointer: fine)').matches) {
+    import('./touch.js').then(({ initTouch }) => initTouch({ root, onPick: (v) => pick(v, v === 'iklan' ? 620 : 840), getScene: () => scene, tick }));
+  }
 
   // deep link to a project
   const m = location.hash.match(/^#proyek\/([abc])$/);
 
   await document.fonts.ready;
-  if (reduced) { pre.remove(); clocks.reveal(); if (m) openDetail(m[1], false); if (want3D) schedule3D(); return; }
+  if (reduced) { pre.remove(); clocks.reveal(); if (m) openDetail(m[1], false); if (want3D) schedule3D(); if (restore) jump(restore.y); return; }
 
   // 01 Intro: the <Rifqy•Hazim> wordmark ripples in with a 000-100 counter, then the sheet lifts (rounded bottom).
   // (2D on purpose: the 3D wordmark pulled Three.js onto the critical path.)
@@ -521,7 +556,39 @@ async function boot() {
     gsap.fromTo($('.thumb > *', card), { scale: 1.2 }, { scale: 1, duration: 0.5, ease: 'power1.out', scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play none none reverse' } });
   });
   gsap.set('#proyek .grid3 > .card, .no-webgl .grid3 > .card', { rotateX: -18, transformOrigin: '50% 100%' });
-  ScrollTrigger.create({ trigger: '.contact', start: 'top bottom', end: 'bottom top', onUpdate: (st) => gsap.to('.sticker', { rotate: st.progress * 120, duration: 0.4, overwrite: true }) });
+  // overwrite 'auto' (not true) so the scroll spin only takes over `rotate` and leaves the sticker's entrance alone
+  // back from an auto-update reload: skip the intro and land where the visitor was
+  if (restore) { tl.progress(1); requestAnimationFrame(() => { ScrollTrigger.refresh(); jump(restore.y); }); }
+  ScrollTrigger.create({ trigger: '.contact', start: 'top bottom', end: 'bottom top', onUpdate: (st) => gsap.to('.sticker', { rotate: st.progress * 120, duration: 0.4, overwrite: 'auto' }) });
+
+  // ---------- Section-level entrances (replay on reverse scroll)
+  // Each section container rises in and its edges open from a rounded inset; scrolling back up above it plays the
+  // move backwards, so it comes in again on the way down. Children keep their own [data-reveal] timing on top.
+  // The studio stage is sticky in the world layout, so it never gets a transform: only its heading eases in.
+  const withWorld = root.classList.contains('has-world');
+  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
+  if (!withWorld) secs.splice(1, 0, '#kerja');
+  secs.map((s) => $(s)).filter(Boolean).forEach((sec) => {
+    const clip = !small; // phones: transform + opacity only (no clip-path repaint of big boxes)
+    gsap.fromTo(sec,
+      { y: 56, opacity: 0.2, ...(clip && { clipPath: 'inset(0% 3% 0% 3% round 32px)' }) },
+      { y: 0, opacity: 1, ...(clip && { clipPath: 'inset(0% 0% 0% 0% round 0px)' }), duration: 0.9, ease: 'power3.out',
+        // clip off once settled, so hover lifts and shadows are never cut
+        onComplete: () => { sec.style.clipPath = ''; },
+        scrollTrigger: { trigger: sec, start: sec.matches('.site-footer') ? 'top bottom' : 'top 94%', toggleActions: 'play none none reverse' } });
+  });
+  if (withWorld) gsap.fromTo('.studio-head', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+    scrollTrigger: { trigger: '#kerja', start: 'top 60%', toggleActions: 'play none none reverse' } });
+
+  // Tools strip: label then marquee slide up
+  gsap.fromTo(['.tools-title', '.marquee'], { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.12,
+    scrollTrigger: { trigger: '.tools', start: 'top 90%', toggleActions: 'play none none reverse' } });
+  // Contact sticker pops in (scale/opacity; its rotation stays with the scroll spin above)
+  gsap.fromTo('.sticker', { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.8)',
+    scrollTrigger: { trigger: '.sticker', start: 'top 92%', toggleActions: 'play none none reverse' } });
+  // Footer contents, staggered
+  gsap.fromTo('.footer-inner > *', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', stagger: 0.08,
+    scrollTrigger: { trigger: '.site-footer', start: 'top bottom', toggleActions: 'play none none reverse' } });
 }
 const THREE_clamp = (x) => Math.min(1, Math.max(0, x));
 

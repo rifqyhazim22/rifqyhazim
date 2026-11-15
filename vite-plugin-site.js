@@ -14,6 +14,8 @@ import { renderStatic } from './src/render-content.js';
 import { PROJECTS, JOURNEY, CONTACT, FLAGS, DOWNLOADS } from './src/content.js';
 
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
+// Unique per build: baked into the bundle (__BUILD_ID__) and written to /version.json for the auto-update check.
+const BUILD_ID = [(process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7), Date.now().toString(36)].filter(Boolean).join('-');
 const url = (p = '/') => SITE_URL + p;
 const PAGE = { id: '/', en: '/en/' };
 // Keyword strategy (KEYWORDS.md): topics Rifqy verifiably works on, in English (schema.org text values).
@@ -177,6 +179,7 @@ export default function sitePlugin() {
   let outDir = 'dist';
   return {
     name: 'rh-site',
+    config() { return { define: { __BUILD_ID__: JSON.stringify(BUILD_ID) } }; },
     configResolved(c) { outDir = path.resolve(c.root, c.build.outDir); },
     buildStart() {
       const v = JSON.stringify(vercelConfig(), null, 2) + '\n';
@@ -200,6 +203,7 @@ export default function sitePlugin() {
       emit('site.webmanifest', manifest());
       emit('llms.txt', llms());
       emit('404.html', notFound());
+      emit('version.json', JSON.stringify({ v: BUILD_ID, built: new Date().toISOString() }) + '\n');
       if (INDEXNOW_KEY) {
         if (!/^[A-Za-z0-9-]{8,128}$/.test(INDEXNOW_KEY)) this.error('INDEXNOW_KEY must be 8-128 chars of a-z, A-Z, 0-9 or "-"');
         emit(`${INDEXNOW_KEY}.txt`, INDEXNOW_KEY);
@@ -208,7 +212,7 @@ export default function sitePlugin() {
     configurePreviewServer(server) {
       // security headers on every preview response (Vite only adds preview.headers to static files)
       const h = securityHeaders(false);
-      server.middlewares.use((req, res, next) => { for (const k in h) res.setHeader(k, h[k]); next(); });
+      server.middlewares.use((req, res, next) => { for (const k in h) res.setHeader(k, h[k]); if ((req.url || '').startsWith('/version.json')) res.setHeader('Cache-Control', 'no-store, max-age=0'); next(); });
       // after the static + html middlewares: unknown paths get the real 404 page with a 404 status (like Vercel)
       return () => server.middlewares.use((req, res, next) => {
         const p = decodeURIComponent((req.url || '/').split('?')[0]);

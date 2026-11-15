@@ -34,7 +34,8 @@ export const dict = {
     loading: 'Menyiapkan meja kerja',
     'kerja.scan': 'Memindai versi diri', back: 'Kembali', 'cta.next': 'Proyek berikutnya',
     'detail.ctx': 'Konteks', 'detail.did': 'Yang aku kerjain', 'detail.res': 'Hasil', 'detail.links': 'Tautan',
-    'sound.on': 'Nyalakan suara', 'sound.off': 'Matikan suara',
+    'sound.on': 'Nyalakan musik kafe', 'sound.off': 'Matikan musik',
+    'upd.msg': 'Ada versi baru situs ini', 'upd.btn': 'Muat ulang', 'upd.later': 'Nanti', 'upd.auto': 'Otomatis dimuat ulang sebentar lagi',
   },
   en: {
     skip: 'Skip to content',
@@ -69,7 +70,8 @@ export const dict = {
     loading: 'Setting up the desk',
     'kerja.scan': 'Scanning both versions', back: 'Back', 'cta.next': 'Next project',
     'detail.ctx': 'Context', 'detail.did': 'What I did', 'detail.res': 'Results', 'detail.links': 'Links',
-    'sound.on': 'Turn sound on', 'sound.off': 'Turn sound off',
+    'sound.on': 'Turn on cafe music', 'sound.off': 'Turn music off',
+    'upd.msg': 'A new version of this site is ready', 'upd.btn': 'Reload', 'upd.later': 'Later', 'upd.auto': 'Reloads by itself in a moment',
   },
 };
 

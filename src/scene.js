@@ -405,6 +405,36 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
     ready,
     info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), shadows: renderer.shadowMap.enabled }),
     playIntro, setFocus, setActive, setTheme, hello,
+    // ---- touch drag (used by touch.js on coarse pointers): which character is under a screen point
+    hitTest(cx, cy) {
+      if (intro) return null;
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObjects(chars.map((c) => c.hit), false)[0];
+      return hit ? chars.find((c) => c.hit === hit.object).key : null;
+    },
+    // slide a character sideways by a screen-pixel offset (mapped to world units across the canvas width)
+    dragChar(key, dxPx) {
+      const c = key === 'agen' ? chAgent : chAds, base = key === 'agen' ? 3.2 : -3.15;
+      const w = canvas.getBoundingClientRect().width || 1;
+      gsap.killTweensOf(c.g.position, 'x');
+      c.g.position.x = base + (dxPx / w) * 9;
+      c.g.rotation.z = THREE.MathUtils.clamp(-dxPx / w, -0.25, 0.25);
+    },
+    releaseChar(key) {
+      const c = key === 'agen' ? chAgent : chAds, base = key === 'agen' ? 3.2 : -3.15;
+      gsap.to(c.g.position, { x: base, duration: 0.9, ease: 'elastic.out(1, 0.45)' });
+      gsap.to(c.g.rotation, { z: 0, duration: 0.7, ease: 'elastic.out(1, 0.5)' });
+    },
+    // back to the first-load look: wide shot, both monitors evenly lit, bubble on Versi Iklan
+    reset() {
+      if (intro) return;
+      hovered = null;
+      if (focus) setFocus(null);
+      else { gsap.to(lit, { iklan: 0.9, agen: 0.9, duration: 0.5 }); gsap.to(chAds.g.rotation, { y: 0.28, duration: 0.6, ease: 'smooth' }); gsap.to(chAgent.g.position, { z: baseZ.agen, duration: 0.6, ease: 'power3.out' }); }
+      if (active !== 'iklan') setActive('iklan');
+    },
     setScroll(p) { scrollP = p; },
   };
 }

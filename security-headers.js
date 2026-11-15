@@ -37,5 +37,9 @@ export const vercelConfig = () => ({
   headers: [
     { source: '/(.*)', headers: Object.entries(securityHeaders(true)).map(([key, value]) => ({ key, value })) },
     { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
+    // auto-update check: always fresh
+    { source: '/version.json', headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }] },
+    // cafe music loops (renamed if they ever change)
+    { source: '/audio/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
   ],
 });

@@ -54,7 +54,7 @@
         <div class="lang-chip mono" role="group" data-i18n-aria="lang.label">
           <button type="button" data-lang-btn="id" aria-pressed="true">ID</button><span aria-hidden="true">/</span><button type="button" data-lang-btn="en" aria-pressed="false">EN</button>
         </div>
-        <button type="button" class="sound-toggle" id="soundBtn" aria-pressed="false" data-i18n-aria="sound.on" aria-label="Nyalakan suara">
+        <button type="button" class="sound-toggle" id="soundBtn" data-sound-btn aria-pressed="false" data-i18n-aria="sound.on" aria-label="Nyalakan musik kafe">
           <svg class="ico-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
           <svg class="ico-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
           <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -62,6 +62,11 @@
         <span class="dl-group dl-hdr" data-dl="header"></span>
         <div class="theme-toggle theme-switch" role="radiogroup" data-i18n-aria="theme.label" aria-label="Tema tampilan" data-pref="auto"><span class="ts-thumb" aria-hidden="true"></span><button type="button" role="radio" data-theme-btn="auto" aria-checked="true" tabindex="0" data-i18n-aria="theme.auto" aria-label="Tema: Auto"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 0 0 0 14z" fill="currentColor"/><path d="M12 1.5v1.5M12 21v1.5" /></svg></button><button type="button" role="radio" data-theme-btn="light" aria-checked="false" tabindex="-1" data-i18n-aria="theme.light" aria-label="Tema: Terang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle class="sun-core" cx="12" cy="12" r="4"/><g class="sun-rays"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></button><button type="button" role="radio" data-theme-btn="dark" aria-checked="false" tabindex="-1" data-i18n-aria="theme.dark" aria-label="Tema: Gelap"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
       </div>
+      <button type="button" class="sound-toggle sound-mobile" id="soundBtnM" data-sound-btn aria-pressed="false" data-i18n-aria="sound.on" aria-label="Nyalakan musik kafe">
+          <svg class="ico-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
+          <svg class="ico-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
+          <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+        </button>
       <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu" data-i18n-aria="menu.open" aria-label="Buka menu"><span></span><span></span></button>
     </div>
   </header>
