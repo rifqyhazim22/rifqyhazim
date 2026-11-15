@@ -324,7 +324,7 @@ html.lenis, html.lenis body { height:auto; }
 .has-world .holo-card { position:absolute; width:clamp(220px, 19vw, 290px); pointer-events:auto; background:rgba(14,33,32,.72); backdrop-filter:blur(8px); border:1px solid rgba(76,184,176,.45); border-top:3px solid var(--edge); color:#F0EBE3; box-shadow:0 0 0 1px rgba(76,184,176,.08), 0 20px 50px rgba(0,0,0,.35); opacity:0; transform:translateY(16px) scale(.96); transition:opacity .4s var(--ease-ui), transform .5s var(--ease-smooth); }
 .has-world .holo-card p { color:#B4AAA0; } .has-world .holo-card .num { color:#4CB8B0; }
 .has-world .holo-card.on { opacity:1; transform:none; }
-.has-world #hc1 { left:3.5%; top:38%; } .has-world #hc2 { right:3.5%; top:24%; } .has-world #hc3 { right:3.5%; top:auto; bottom:9%; }
+.has-world #hc1 { left:3.5%; top:24%; } .has-world #hc3 { left:3.5%; top:auto; bottom:9%; } .has-world #hc2 { right:3.5%; top:24%; } .has-world #hc4 { right:3.5%; top:auto; bottom:9%; }
 .connectors { display:none; }
 .has-world .connectors { display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .connectors path { fill:none; stroke:#4CB8B0; stroke-width:1.2; stroke-dasharray:4 4; opacity:0; transition:opacity .4s; }
@@ -996,18 +996,19 @@ html:not([data-theme="dark"]) .connectors path { stroke:#0F6E6A; }
   .dl-hdr .dl-chip { padding:0 9px; }
 }
 
-/* ---------- Studio cards (kerja): a calm three-card layout that can never overlap.
-   01 sits left (it points at the ads platform), 02 and 03 stack on the right with a fixed gap (they point at the
-   agent platform), so the reading order is 1 -> 2 -> 3. The grid keeps the stack centred between the title and the
-   scan counter; cards still fade/rise in with the scrubbed stage (.on). */
+/* ---------- Studio cards (kerja): four cards, two on each side, that can never overlap.
+   01 (top left) and 03 (bottom left) point at the ads character; 02 (top right) and 04 (bottom right)
+   point at the agent, at different spots, so the reading order is 1 -> 2 on the top row, 3 -> 4 below.
+   The grid keeps the stack centred between the title and the scan counter; cards still fade/rise with the stage (.on). */
 .has-world .studio-cards { display:grid; grid-template-columns:var(--hcw) 1fr var(--hcw); grid-template-rows:1fr auto auto 1fr; row-gap:clamp(32px, 5vh, 56px);
   --hcw:clamp(230px, 19vw, 300px); padding:calc(110px + 52px) 3.5% calc(clamp(24px, 6vh, 60px) + 56px); box-sizing:border-box; }
 .has-world .holo-card { position:relative; width:auto; padding:20px 22px; }
 .has-world .holo-card h3 { font-size:clamp(19px, 1.3vw + 4px, 24px); margin:8px 0 10px; }
 .has-world .holo-card p { font-size:14px; line-height:1.5; }
-.has-world #hc1 { grid-column:1; grid-row:2 / span 2; align-self:center; left:auto; top:auto; }
+.has-world #hc1 { grid-column:1; grid-row:2; left:auto; top:auto; }
+.has-world #hc3 { grid-column:1; grid-row:3; left:auto; top:auto; bottom:auto; }
 .has-world #hc2 { grid-column:3; grid-row:2; left:auto; right:auto; top:auto; }
-.has-world #hc3 { grid-column:3; grid-row:3; left:auto; right:auto; top:auto; bottom:auto; }
+.has-world #hc4 { grid-column:3; grid-row:3; left:auto; right:auto; top:auto; bottom:auto; }
 @media (max-height: 760px) {
   .has-world .studio-cards { row-gap:28px; padding-top:calc(96px + 44px); }
   .has-world .holo-card { padding:16px 18px; }
@@ -1025,9 +1026,10 @@ html:not([data-theme="dark"]) .connectors path { stroke:#0F6E6A; }
 }
 
 /* ---------- Lite / no-world kerja: echo the desktop studio.
-   Two pixel "versi diri" stand in the middle on lit platforms; cards 01 / 02 / 03 sit around them
-   with connector lines (01 → ads, 02 → agent head, 03 → agent lower). Scaled down on phones,
-   full copy kept, body type stays at least 12px, no horizontal overflow. */
+   Two pixel "versi diri" stand in the middle on lit platforms; four cards sit around them
+   (01 / 03 left of ads, 02 / 04 right of the agent) with connector lines to distinct spots.
+   On phones: 01 and 02 on top, the pair in the middle, 03 and 04 below. Full copy kept,
+   body type stays at least 12px, no horizontal overflow. */
 .has-world .studio-cast { display:none; }
 html:not(.has-world) .stage-studio {
   position:relative; overflow:hidden;
@@ -1053,17 +1055,18 @@ html:not(.has-world)[data-theme="dark"] .connectors path { stroke:#4CB8B0; }
 html:not(.has-world) .studio-cards {
   position:relative; z-index:2; display:grid;
   grid-template-columns:minmax(0,1fr) minmax(120px,0.72fr) minmax(0,1fr);
-  grid-template-rows:auto auto auto;
+  grid-template-rows:auto auto;
   column-gap:clamp(8px, 2vw, 28px); row-gap:clamp(16px, 3vh, 36px);
   align-items:center; max-width:1200px; margin:0 auto;
   padding:8px max(var(--page-pad), env(safe-area-inset-right)) 8px max(var(--page-pad), env(safe-area-inset-left));
   box-sizing:border-box;
 }
 html:not(.has-world) .studio-cards > .holo-card { min-width:0; width:auto; max-width:none; overflow-wrap:break-word; }
-html:not(.has-world) #hc1 { grid-column:1; grid-row:1 / span 3; align-self:center; }
-html:not(.has-world) .studio-cast { grid-column:2; grid-row:1 / span 3; align-self:center; justify-self:center; }
-html:not(.has-world) #hc2 { grid-column:3; grid-row:1 / span 2; align-self:end; }
-html:not(.has-world) #hc3 { grid-column:3; grid-row:3; align-self:start; }
+html:not(.has-world) #hc1 { grid-column:1; grid-row:1; align-self:end; }
+html:not(.has-world) #hc3 { grid-column:1; grid-row:2; align-self:start; }
+html:not(.has-world) .studio-cast { grid-column:2; grid-row:1 / span 2; align-self:center; justify-self:center; }
+html:not(.has-world) #hc2 { grid-column:3; grid-row:1; align-self:end; }
+html:not(.has-world) #hc4 { grid-column:3; grid-row:2; align-self:start; }
 html:not(.has-world) .holo-card {
   padding:18px 20px; border-top-width:3px; background:rgba(255,255,255,.78);
   border-color:rgba(15,110,106,.22); color:var(--ink);
@@ -1130,7 +1133,7 @@ html:not(.has-world)[data-theme="dark"] .studio-plat {
   .studio-pod { max-width:130px; }
   .studio-sprite { max-width:80px; width:62%; }
 }
-/* phones: cards above and below a dedicated character row, so the pair can be large and still read 01 left / 02–03 right */
+/* phones: 01 and 02 on top, the pair in the middle, 03 and 04 below */
 @media (max-width: 600px) {
   html:not(.has-world) .stage-studio { padding:72px 0 64px; }
   html:not(.has-world) .studio-cards {
@@ -1144,7 +1147,8 @@ html:not(.has-world)[data-theme="dark"] .studio-plat {
     grid-column:1 / span 2; grid-row:2; align-self:center; justify-self:center;
     width:100%; max-width:260px; gap:clamp(16px, 6vw, 28px); padding:6px 0 8px;
   }
-  html:not(.has-world) #hc3 { grid-column:2; grid-row:3; align-self:start; }
+  html:not(.has-world) #hc3 { grid-column:1; grid-row:3; align-self:stretch; }
+  html:not(.has-world) #hc4 { grid-column:2; grid-row:3; align-self:stretch; }
   html:not(.has-world) .holo-card { padding:12px 12px 14px; border-radius:16px; }
   html:not(.has-world) .holo-card h3 { font-size:15px; margin:4px 0 6px; }
   html:not(.has-world) .holo-card p { font-size:12px; line-height:1.4; }

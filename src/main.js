@@ -510,8 +510,8 @@ async function boot() {
     // Studio stage: scroll progress, header/cursor styling, overlay sync. Works before the world arrives
     // (cards follow the scroll thresholds); once it is ready, tags and connectors track the 3D characters.
     const worldEl = $('#world');
-    const cards = ['#hc1', '#hc2', '#hc3'].map((s) => $(s));
-    const cn = ['#cn1', '#cn2', '#cn3'].map((s) => $(s));
+    const cards = ['#hc1', '#hc2', '#hc3', '#hc4'].map((s) => $(s));
+    const cn = ['#cn1', '#cn2', '#cn3', '#cn4'].map((s) => $(s));
     const tagA = $('#tagAds'), tagB = $('#tagAgent'), num = $('#scanNum');
     ScrollTrigger.create({
       trigger: '#kerja', start: 'top top', end: 'bottom bottom', scrub: true,
@@ -522,7 +522,7 @@ async function boot() {
     const btnSend = $('.contact .btn-primary');
     btnSend.addEventListener('pointerenter', () => world?.setCTA(true)); btnSend.addEventListener('pointerleave', () => world?.setCTA(false));
     btnSend.addEventListener('focus', () => world?.setCTA(true)); btnSend.addEventListener('blur', () => world?.setCTA(false));
-    const thresholds = [0.3, 0.48, 0.66];
+    const thresholds = [0.26, 0.40, 0.54, 0.66];
     gsap.ticker.add(() => {
       if (!root.classList.contains('has-world')) return;
       if (!stageActive && studioP <= 0) return;
@@ -538,17 +538,19 @@ async function boot() {
         c.classList.toggle('on', on); cn[i].classList.toggle('on', on && ok);
         if (!ok) return;
         const r = c.getBoundingClientRect(), host = c.offsetParent.getBoundingClientRect();
-        const a = i === 0 ? an.ads : an.agent;
+        const a = (i === 0 || i === 2) ? an.ads : an.agent; // 01+03 → ads, 02+04 → agent
         const fromLeft = r.left + r.width / 2 < a.x;
         const sx = (fromLeft ? r.right : r.left) - host.left, sy = r.top + 30 - host.top;
-        const ex = a.x - host.left + (fromLeft ? -40 : 40), ey = a.y - host.top + (i === 2 ? innerHeight * 0.1 : 0); // 02 meets the agent at the head, 03 lower down, so the two lines never merge
+        // top row meets the head, bottom row is lower, so the two lines on each side never merge
+        const eyOff = (i === 2 ? innerHeight * 0.12 : i === 3 ? innerHeight * 0.1 : 0);
+        const ex = a.x - host.left + (fromLeft ? -40 : 40), ey = a.y - host.top + eyOff;
         cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
       });
     });
   } else {
     // lite / no-world: the same card-to-character connectors, aimed at the 2D sprites
-    const cards = ['#hc1', '#hc2', '#hc3'].map((s) => $(s));
-    const cn = ['#cn1', '#cn2', '#cn3'].map((s) => $(s));
+    const cards = ['#hc1', '#hc2', '#hc3', '#hc4'].map((s) => $(s));
+    const cn = ['#cn1', '#cn2', '#cn3', '#cn4'].map((s) => $(s));
     const adsEl = $('#castAds'), agentEl = $('#castAgent');
     const hostEl = $('.stage-studio .stage-sticky');
     const spriteBox = (fig) => (fig.querySelector('.studio-sprite') || fig).getBoundingClientRect();
@@ -558,10 +560,11 @@ async function boot() {
       const ads = adsEl.getBoundingClientRect(), ag = agentEl.getBoundingClientRect();
       const adsS = spriteBox(adsEl), agS = spriteBox(agentEl);
       if (adsS.width < 2 || agS.width < 2 || host.width < 2) return;
-      // 01 → ads shoulder, 02 → agent head, 03 → agent orbs (right, lower)
+      // 01 → ads shoulder, 02 → agent head, 03 → ads lower/book, 04 → agent orbs
       const anchors = [
         { x: adsS.left + adsS.width * 0.72, y: adsS.top + adsS.height * 0.32, mid: ads.left + ads.width / 2 },
         { x: agS.left + agS.width * 0.50, y: agS.top + agS.height * 0.18, mid: ag.left + ag.width / 2 },
+        { x: adsS.left + adsS.width * 0.28, y: adsS.top + adsS.height * 0.72, mid: ads.left + ads.width / 2 },
         { x: agS.left + agS.width * 0.96, y: agS.top + agS.height * 0.52, mid: ag.left + ag.width / 2 },
       ];
       const rnd = (n) => Math.round(n * 10) / 10;
