@@ -533,7 +533,7 @@ async function boot() {
         const a = i === 0 ? an.ads : an.agent;
         const fromLeft = r.left + r.width / 2 < a.x;
         const sx = (fromLeft ? r.right : r.left) - host.left, sy = r.top + 30 - host.top;
-        const ex = a.x - host.left + (fromLeft ? -40 : 40), ey = a.y - host.top;
+        const ex = a.x - host.left + (fromLeft ? -40 : 40), ey = a.y - host.top + (i === 2 ? innerHeight * 0.1 : 0); // 02 meets the agent at the head, 03 lower down, so the two lines never merge
         cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
       });
     });
