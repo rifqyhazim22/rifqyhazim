@@ -116,6 +116,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     contact: { p: [CX + 1.0, 3.8, 15.5], l: [CX + 0.2, 0.55, 0] },
   };
   let studioP = 0, visible = false, cta = false;
+  const held = new Set(); // reasons the world is covered (project detail, section wipe): skip rendering meanwhile
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
   addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
 
@@ -226,7 +227,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
   const groupOf = (key) => (key === 'studio' ? 'studio' : key === 'contact' ? 'contact' : 'room');
   function frame() {
     requestAnimationFrame(frame);
-    if (!visible || !stops.length) return;
+    if (!visible || !stops.length || held.size) return;
     const now = performance.now(), dt = now - last; last = now;
     time = (now - t0) / 1000;
     // adaptive quality: if frames keep running slow, step the pixel ratio down (never back up mid-visit)
@@ -276,6 +277,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     setStation() {}, // (kept for callers; the camera now follows the scroll position on its own)
     setStudio(p) { studioP = p; },
     setCTA(v) { cta = v; },
+    hold(reason, on) { if (on) held.add(reason); else { held.delete(reason); last = performance.now(); } },
     anchors: () => ({ ads: project(anchors.ads), agent: project(anchors.agent) }),
     setTheme,
     cam: () => [camera.position.x, camera.position.y, camera.position.z],

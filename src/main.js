@@ -224,12 +224,12 @@ function wipeTo(id, covered) {
   wipeSheet.style.setProperty('--wipe', bg); wipeSheet.style.setProperty('--wipe-ink', ink);
   wipeNum.textContent = `${String(sectionIds.indexOf(id) + 1).padStart(2, '0')} / 06`;
   wipeTitle.textContent = t(navKey[id]);
-  wipe.classList.add('run'); whoosh(true);
-  gsap.timeline({ onComplete: () => { wipe.classList.remove('run'); wiping = false; } })
+  wipe.classList.add('run'); whoosh(true); world?.hold('wipe', true); // the sheet is coming over the page: no 3D frames until the jump
+  gsap.timeline({ onComplete: () => { wipe.classList.remove('run'); wiping = false; world?.hold('wipe', false); } })
     .set(wipeSheet, { yPercent: 102, borderRadius: '48px 48px 0 0' })
     .to(wipeSheet, { yPercent: 0, duration: 0.5, ease: 'smooth' })
     .fromTo([wipeNum, wipeTitle], { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', stagger: 0.05 }, 0.18)
-    .add(() => { covered?.(); jump(targetY(id)); ScrollTrigger.update(); requestAnimationFrame(revealInView); }, 0.52)
+    .add(() => { covered?.(); jump(targetY(id)); ScrollTrigger.update(); requestAnimationFrame(revealInView); world?.hold('wipe', false); }, 0.52)
     .to({}, { duration: 0.28 })
     .add(() => whoosh(false))
     .set(wipeSheet, { borderRadius: '0 0 48px 48px' })
@@ -318,7 +318,7 @@ function openDetail(key, push = true) {
   if (dBusy || openKey === key) return; dBusy = true;
   lastFocus = document.activeElement;
   fillDetail(key);
-  detail.hidden = false; lenis?.stop();
+  detail.hidden = false; lenis?.stop(); world?.hold('detail', true); // the sheet covers the page: pause the 3D behind it
   if (push) history.pushState({ p: key }, '', '#proyek/' + key);
   whoosh(true);
   const copy = $$('.d-copy > *, .d-facts > div', detail);
@@ -333,7 +333,7 @@ function openDetail(key, push = true) {
 }
 function closeDetail() {
   if (!openKey) return; if (dBusy) { pendingClose = true; return; } dBusy = true; whoosh(false);
-  const done = () => { detail.hidden = true; openKey = null; dBusy = false; lenis?.start(); lastFocus?.focus?.({ preventScroll: true }); };
+  const done = () => { world?.hold('detail', false); detail.hidden = true; openKey = null; dBusy = false; lenis?.start(); lastFocus?.focus?.({ preventScroll: true }); };
   if (reduced) { done(); return; }
   gsap.timeline({ onComplete: done })
     .to($$('.d-copy > *, .d-facts > div', detail), { opacity: 0, y: -10, duration: 0.15, ease: 'power1.in' })
@@ -456,6 +456,7 @@ async function load3D() {
     });
   } catch { return; }
   window.__world = world;
+  if (openKey) world.hold('detail', true); // deep link: the detail opened before the 3D arrived
   world.setTheme(root.dataset.theme === 'dark');
   world.setStudio(studioP);
   ScrollTrigger.addEventListener('refresh', () => world.refresh());
