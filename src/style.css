@@ -306,8 +306,8 @@ html.lenis, html.lenis body { height:auto; }
 /* 3D mode only: layered sheets over a fixed world */
 .world { display:none; }
 .has-world .world { display:block; position:fixed; inset:0; z-index:0; background:radial-gradient(120% 90% at 50% 70%, #1E3A38 0%, #0E2120 60%, #0A1817 100%); transition:background .6s var(--ease-smooth); }
-.has-world .world.is-contact { background:radial-gradient(110% 90% at 65% 60%, #FBF3D4 0%, #F0EBE3 55%, #E6E2DA 100%); }
-[data-theme="dark"].has-world .world.is-contact { background:radial-gradient(110% 90% at 65% 60%, #3A3220 0%, #1A1714 60%, #141110 100%); }
+.has-world .world[data-zone="contact"] { background:radial-gradient(110% 90% at 65% 60%, #FBF3D4 0%, #F0EBE3 55%, #E6E2DA 100%); }
+[data-theme="dark"].has-world .world[data-zone="contact"] { background:radial-gradient(110% 90% at 65% 60%, #3A3220 0%, #1A1714 60%, #141110 100%); }
 .world canvas { width:100%; height:100%; display:block; }
 .has-world main, .has-world .site-footer { position:relative; z-index:1; }
 .has-world .sheet { position:relative; background:var(--bg); z-index:2; }
@@ -903,3 +903,26 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
 .menu-vol input[data-vol]::-moz-range-progress { background:#F0EBE3; } .menu-vol input[data-vol]::-moz-range-track { background:rgba(255,255,255,.28); }
 .menu-vol input[data-vol]::-webkit-slider-thumb { background:#F0EBE3; border-color:var(--teal); }
 .menu-vol input[data-vol]::-moz-range-thumb { background:#F0EBE3; border-color:var(--teal); }
+
+/* ---------- 3D section windows (full + lite): each content section opens with a window onto its corner of the
+   3D room, then its content sits on a soft veil. The world canvas is fixed behind the whole page. */
+.s3d .world { display:block; position:fixed; inset:0; z-index:0; }
+.s3d .world[data-zone="room"], .s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #FBF7F0 0%, #F0EBE3 55%, #E4DDD2 100%); }
+[data-theme="dark"].s3d .world[data-zone="room"], [data-theme="dark"].s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #2A2520 0%, #1A1714 60%, #12100E 100%); }
+.s3d main, .s3d .site-footer { position:relative; z-index:1; }
+.s3d .sheet-content { background:transparent; box-shadow:none; border-radius:0; overflow:visible; }
+.s3d [data-s3d] { --win:52vh; --veil:color-mix(in srgb, var(--bg) 94%, transparent); position:relative; padding-top:var(--win) !important;
+  background:linear-gradient(to bottom, transparent 0, transparent calc(var(--win) - 130px), var(--veil) calc(var(--win) - 10px), var(--veil) 100%); }
+.s3d .band-paper[data-s3d] { --veil:color-mix(in srgb, var(--bg-alt) 94%, transparent); }
+.s3d .tools[data-s3d] { border-top:0; }
+.s3d #foto { --win:115vh; }
+/* the plain photo is for no-3D visitors and screen readers; in 3D it is on the laptop screen */
+.s3d .photo-card { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; margin:0; }
+.photo-card { margin:0 auto; max-width:560px; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow); background:var(--surface); }
+.photo-card img { display:block; width:100%; height:auto; }
+/* lite has no layered sheets: give the non-3D parts an opaque floor so the fixed canvas never shows through them */
+.s3d:not(.has-world) .sheet-hero, .s3d:not(.has-world) #kerja, .s3d:not(.has-world) #ngobrol, .s3d .site-footer { position:relative; z-index:1; background:var(--bg); }
+.s3d:not(.has-world) #kerja, .s3d:not(.has-world) #ngobrol { background:var(--bg-alt); }
+.s3d .world canvas { opacity:0; transition:opacity .8s ease; }
+.s3d .world.is-ready canvas { opacity:1; }
+@media (max-width: 600px) { .s3d [data-s3d] { --win:46vh; } .s3d #foto { --win:100vh; } }

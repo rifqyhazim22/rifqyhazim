@@ -411,8 +411,10 @@ document.querySelectorAll('.wm-name').forEach((el) => {
 const want3D = tier !== 'off';
 const yieldMain = () => new Promise((r) => (window.scheduler?.yield ? window.scheduler.yield().then(r) : setTimeout(r, 0)));
 let studioP = 0, worldReady = false;
+// scroll position fed to the 3D world, smoothed by a ScrollTrigger scrub (the camera eases after the page, both ways)
+const drive = { y: scrollY };
 function fallback2D() {
-  root.classList.remove('three-pending', 'lite', 'has-world'); root.classList.add('no-webgl');
+  root.classList.remove('three-pending', 'lite', 'has-world', 's3d'); root.classList.add('no-webgl');
   if (!root.classList.contains('motion')) return;
   $$('.holo-card').forEach((c) => { c.classList.add('on'); gsap.to(c, { opacity: 1, y: 0, duration: 0.5 }); });
   ScrollTrigger.refresh();
@@ -442,14 +444,21 @@ async function load3D() {
   root.classList.add('three-ready');
   scene.playIntro();
   setTimeout(() => root.classList.remove('three-pending'), 900);
-  if (lite) return;
+  if (!root.classList.contains('s3d')) return;
   await yieldMain();
   const { createWorld } = await import('./world.js');
   await yieldMain();
-  world = createWorld({ canvas: $('#worldCanvas'), studioEl: $('#kerja'), contactEl: $('#ngobrol') });
+  const sections = Object.fromEntries($$('[data-s3d]').map((el) => [el.dataset.s3d, el]));
+  try {
+    world = createWorld({
+      canvas: $('#worldCanvas'), worldEl: $('#world'), studioEl: lite ? null : $('#kerja'), contactEl: lite ? null : $('#ngobrol'),
+      sections, getScroll: () => drive.y, lite, journeyCount: $$('#journey li').length, photoUrl: '/img/rifqy-desk.webp',
+    });
+  } catch { return; }
+  window.__world = world;
   world.setTheme(root.dataset.theme === 'dark');
   world.setStudio(studioP);
-  if ($('#world').classList.contains('is-contact')) world.setStation('contact');
+  ScrollTrigger.addEventListener('refresh', () => world.refresh());
   await world.ready;
   worldReady = true;
   $('#world').classList.add('is-ready');
@@ -486,12 +495,7 @@ async function boot() {
       onUpdate: (st) => { studioP = st.progress; world?.setStudio(studioP); },
       onToggle: (st) => { header.classList.toggle('on-stage', st.isActive); root.classList.toggle('cursor-light', st.isActive); },
     });
-    ScrollTrigger.create({
-      trigger: '#ngobrol', start: 'top bottom', end: 'bottom top',
-      onEnter: () => { world?.setStation('contact'); worldEl.classList.add('is-contact'); },
-      onEnterBack: () => { world?.setStation('contact'); worldEl.classList.add('is-contact'); },
-      onLeaveBack: () => { world?.setStation('studio'); worldEl.classList.remove('is-contact'); },
-    });
+    worldEl.dataset.zone = 'studio';
     const btnSend = $('.contact .btn-primary');
     btnSend.addEventListener('pointerenter', () => world?.setCTA(true)); btnSend.addEventListener('pointerleave', () => world?.setCTA(false));
     btnSend.addEventListener('focus', () => world?.setCTA(true)); btnSend.addEventListener('blur', () => world?.setCTA(false));
@@ -518,6 +522,15 @@ async function boot() {
         cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
       });
     });
+  }
+
+  if (root.classList.contains('s3d')) {
+    // the 3D world's camera input: document scroll, scrubbed (0.8 s catch-up), recomputed on every layout refresh
+    gsap.to(drive, { y: () => ScrollTrigger.maxScroll(window), ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.8, invalidateOnRefresh: true } });
+    // backdrop colour behind the canvas: dark scan stage, the room (follows the theme), the contact corner
+    const worldEl = $('#world'), zone = (z) => { worldEl.dataset.zone = z; };
+    const zones = [...(root.classList.contains('has-world') ? [['#kerja', 'studio']] : []), ...$$('[data-s3d]').map((el) => [el, 'room']), ...(root.classList.contains('has-world') ? [['#ngobrol', 'contact']] : [])];
+    zones.forEach(([el, z]) => ScrollTrigger.create({ trigger: el, start: 'top 55%', end: 'bottom 55%', onToggle: (st) => st.isActive && zone(z) }));
   }
 
   chips.forEach((c) => {
@@ -606,7 +619,7 @@ async function boot() {
   // move backwards, so it comes in again on the way down. Children keep their own [data-reveal] timing on top.
   // The studio stage is sticky in the world layout, so it never gets a transform: only its heading eases in.
   const withWorld = root.classList.contains('has-world');
-  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
+  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#foto', '#ngobrol', '.site-footer'];
   if (!withWorld) secs.splice(1, 0, '#kerja');
   secs.map((s) => $(s)).filter(Boolean).forEach((sec) => {
     const clip = !small; // phones: transform + opacity only (no clip-path repaint of big boxes)

@@ -12,7 +12,7 @@ import { drawClock } from './clock.js';
 // lite = phones/tablets: DPR cap 1.5, no shadow maps (blob shadows only), fewer floaters, simple camera moves, tap instead of hover.
 export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite = false }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, alpha: true, powerPreference: lite ? 'default' : 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1.5 : 1.75));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1.5 : 2)); // native sharpness on desktop (capped at 2)
   renderer.shadowMap.enabled = !lite;
   renderer.shadowMap.type = THREE.VSMShadowMap;
 

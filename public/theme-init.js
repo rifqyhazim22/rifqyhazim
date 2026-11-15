@@ -1,7 +1,7 @@
 // Runs before first paint (external file so the Content-Security-Policy needs no inline script).
 // 1) Theme: always starts on Auto (system preference). Manual picks are not stored.
 // 2) 3D tier + layout classes, decided up front so the page never shifts when the (deferred) 3D arrives:
-//    full = desktop (3D hero + 3D world), lite = phones/tablets (3D hero only), off = reduced motion / save-data / weak device.
+//    full = desktop (3D hero + the whole 3D world), lite = phones/tablets (3D hero + lighter section stations), off = reduced motion / save-data / weak device.
 (function () {
   var root = document.documentElement, mq = function (q) { return matchMedia(q).matches; };
   try { localStorage.removeItem('rh-theme'); } catch (e) {}
@@ -15,5 +15,6 @@
   root.dataset.tier = tier;
   root.classList.add(tier === 'off' ? 'no-webgl' : 'three-pending');
   if (tier === 'lite') root.classList.add('lite');
+  if (tier !== 'off') root.classList.add('s3d'); // 3D windows at the top of the content sections (full and lite)
   if (tier === 'full') root.classList.add('has-world');
 })();

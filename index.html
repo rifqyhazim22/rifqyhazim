@@ -160,7 +160,7 @@
 
     <div class="sheet sheet-content">
     <!-- PROYEK -->
-    <section class="band" id="proyek" aria-labelledby="projTitle">
+    <section class="band" id="proyek" data-s3d="proyek" aria-labelledby="projTitle">
       <div class="wrap">
         <div class="sec-title"><span class="rule"></span><h2 id="projTitle" data-i18n="proj.title">Proyek pilihan</h2><span class="rule"></span></div>
         <div class="grid3">
@@ -187,7 +187,7 @@
     </section>
 
     <!-- TOOLS MARQUEE -->
-    <section class="tools" aria-labelledby="toolsTitle">
+    <section class="tools" data-s3d="tools" aria-labelledby="toolsTitle">
       <h2 id="toolsTitle" class="mono tools-title" data-i18n="tools.title">Alat yang sering dipakai</h2>
       <div class="marquee"><div class="marquee-track" id="marquee">
         <span class="pill" style="--bg:var(--butter-soft)" data-i18n="t1">Iklan berbayar</span>
@@ -200,7 +200,7 @@
     </section>
 
     <!-- TANYA -->
-    <section class="band band-paper" id="tanya" aria-labelledby="askTitle">
+    <section class="band band-paper" id="tanya" data-s3d="tanya" aria-labelledby="askTitle">
       <div class="wrap">
         <div class="sec-title"><span class="rule"></span><h2 id="askTitle" data-i18n="ask.title">Tanya aja soal</h2><span class="rule"></span></div>
         <ul class="topics">
@@ -215,10 +215,20 @@
     </section>
 
     <!-- JEJAK -->
-    <section class="band" id="jejak" aria-labelledby="jrTitle">
+    <section class="band" id="jejak" data-s3d="jejak" aria-labelledby="jrTitle">
       <div class="wrap">
         <div class="sec-title"><span class="rule"></span><h2 id="jrTitle" data-i18n="jr.title">Perjalanan</h2><span class="rule"></span></div>
         <ol class="journey" id="journey"></ol>
+      </div>
+    </section>
+
+    <!-- FOTO: in 3D the photo sits on a laptop screen the camera zooms into; the figure is the plain version -->
+    <section class="band band-paper band-photo" id="foto" data-s3d="foto" aria-labelledby="photoTitle">
+      <div class="wrap">
+        <div class="sec-title"><span class="rule"></span><h2 id="photoTitle" data-i18n="photo.title">Ini aku</h2><span class="rule"></span></div>
+        <figure class="photo-card" data-reveal>
+          <picture><source srcset="/img/rifqy-desk.webp" type="image/webp"><img src="/img/rifqy-desk.jpg" width="886" height="790" loading="lazy" decoding="async" data-i18n-alt="photo.alt" alt="Rifqy Hazim di meja kerja dengan laptop"></picture>
+        </figure>
       </div>
     </section>
 

@@ -2,15 +2,26 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ADS, AGENT } from './sprites.js';
 import { buildVoxel, wave } from './voxel.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { buildStations } from './stations.js';
 
-// Fixed full-screen world behind the page sheets: "Studio Versi" (scan stage) and the contact vignette.
-export function createWorld({ canvas, studioEl, contactEl }) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;
+// One fixed full-screen 3D world behind the page: "Studio Versi" (scan stage), a long studio room with a corner for
+// every content section (stations.js) and the contact vignette. The camera travels between them as you scroll:
+// its pose is a pure function of a scrubbed scroll value, so scrolling up replays the exact path backwards.
+//   lite (phones/tablets): section stations only, lower pixel ratio, no shadows.
+export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {}, getScroll, lite = false, journeyCount, photoUrl }) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, alpha: true, powerPreference: lite ? 'default' : 'high-performance' });
+  // full device pixel ratio like a native render (capped at 2); phones 1.5. Steps down by itself if frames run slow.
+  const maxDpr = Math.min(devicePixelRatio || 1, lite ? 1.5 : 2), minDpr = Math.min(maxDpr, lite ? 1 : 1.25);
+  let dpr = maxDpr; renderer.setPixelRatio(dpr);
+  renderer.shadowMap.enabled = !lite; renderer.shadowMap.type = THREE.VSMShadowMap;
   renderer.localClippingEnabled = true;
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
   const scene = new THREE.Scene();
+  // soft studio reflections for the section stations (the scan stage and contact keep their own flat look)
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.55;
 
   // ================= STUDIO (at origin) =================
   const studio = new THREE.Group(); scene.add(studio);
@@ -54,8 +65,9 @@ export function createWorld({ canvas, studioEl, contactEl }) {
   const sAgent = stageChar(AGENT, 1.9, '#C4B0E8');
   sAgent.ped.rotation.y = -0.18; sAds.ped.rotation.y = 0.18;
 
-  // ================= CONTACT (at x = 80) =================
-  const contact = new THREE.Group(); contact.position.x = 80; scene.add(contact);
+  // ================= CONTACT (at x = 104, past the end of the room) =================
+  const CX = 104;
+  const contact = new THREE.Group(); contact.position.x = CX; scene.add(contact);
   const cHemi = new THREE.HemisphereLight('#ffffff', '#F0EBE3', 1.6); contact.add(cHemi);
   const cSun = new THREE.DirectionalLight('#fff6ea', 1.5); cSun.position.set(-3, 8, 6); cSun.castShadow = true;
   cSun.shadow.mapSize.set(1024, 1024); Object.assign(cSun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -3 });
@@ -85,12 +97,25 @@ export function createWorld({ canvas, studioEl, contactEl }) {
   paper.castShadow = true; contact.add(paper);
   let paperLaunch = 0; // 0 orbit, 1 launched away
 
+  // keep the scan stage and the contact vignette as they were (flat studio light, no room reflections)
+  [studio, contact].forEach((g) => g.traverse((o) => { const ms = o.material ? [].concat(o.material) : []; ms.forEach((m) => { if ('envMapIntensity' in m) m.envMapIntensity = 0; }); }));
+
+  // ================= section stations (shared room) =================
+  const room = buildStations({ scene, lite, journeyCount, photoUrl });
+  const rHemi = new THREE.HemisphereLight('#ffffff', '#cbbfae', 0.9); scene.add(rHemi);
+  const rKey = new THREE.DirectionalLight('#fff4e4', 1.6); rKey.position.set(4, 10, 7); scene.add(rKey, rKey.target);
+  if (!lite) {
+    rKey.castShadow = true; rKey.shadow.mapSize.set(2048, 2048);
+    Object.assign(rKey.shadow.camera, { left: -9, right: 9, top: 9, bottom: -5, near: 1, far: 40 });
+    rKey.shadow.radius = 6; rKey.shadow.blurSamples = 12; rKey.shadow.bias = -0.0005;
+  }
+
   // ================= camera stations =================
   const stations = {
     studio: { from: { p: [0, 7.5, 16], l: [0, 0.4, 0] }, to: { p: [0, 2.6, 9.6], l: [0, 1.1, 0] } },
-    contact: { p: [80 + 1.0, 3.8, 15.5], l: [80 + 0.2, 0.55, 0] },
+    contact: { p: [CX + 1.0, 3.8, 15.5], l: [CX + 0.2, 0.55, 0] },
   };
-  let station = 'studio', studioP = 0, contactIn = 0, visible = false, cta = false;
+  let studioP = 0, visible = false, cta = false;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
   addEventListener('pointermove', (e) => { pointer.x = (e.clientX / innerWidth) * 2 - 1; pointer.y = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
 
@@ -105,52 +130,83 @@ export function createWorld({ canvas, studioEl, contactEl }) {
     gsap.to(discMat.color, { r: c.r, g: c.g, b: c.b, duration: 0.6 });
     gsap.to(cHemi, { intensity: dark ? 0.6 : 1.6, duration: 0.6 });
     gsap.to(cSun, { intensity: dark ? 0.9 : 1.5, duration: 0.6 });
+    room.setTheme(dark);
+    rHemi.color.set(dark ? '#d8cfc4' : '#ffffff'); rHemi.groundColor.set(dark ? '#2a241e' : '#cbbfae');
+    roomLight = dark ? 0.55 : 1; scene.environmentIntensity = dark ? 0.3 : 0.55;
   }
+  let roomLight = 1;
 
   // ---- outputs for the HTML overlay (counter, card anchors)
   const anchors = { ads: new THREE.Vector3(), agent: new THREE.Vector3() };
   const tmp = new THREE.Vector3();
   function project(v) { tmp.copy(v).project(camera); return { x: (tmp.x * 0.5 + 0.5) * innerWidth, y: (-tmp.y * 0.5 + 0.5) * innerHeight }; }
 
-  let waved = false;
-  const t0 = performance.now();
-  const P = new THREE.Vector3(), L = new THREE.Vector3();
-  function frame() {
-    requestAnimationFrame(frame);
-    if (!visible) return;
-    const time = (performance.now() - t0) / 1000;
-    pointer.sx += (pointer.x - pointer.sx) * 0.05; pointer.sy += (pointer.y - pointer.sy) * 0.05;
-    const sm = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
-    if (station === 'studio') {
-      const st = stations.studio, k = sm(0, 0.35, studioP);
-      P.set(...st.from.p).lerp(new THREE.Vector3(...st.to.p), k);
-      L.set(...st.from.l).lerp(new THREE.Vector3(...st.to.l), k);
-      // slow orbit as you scroll through the stage
+  // ---- scroll stops: where each station is "at rest" (document scroll px), refreshed on layout changes
+  const docTop = (el) => el.getBoundingClientRect().top + scrollY - (Number(gsap.getProperty(el, 'y')) || 0);
+  let stops = [];
+  function refresh() {
+    const vh = innerHeight, list = [];
+    if (!lite && studioEl) list.push({ key: 'studio', top: docTop(studioEl), at: docTop(studioEl) + studioEl.offsetHeight - vh });
+    Object.entries(sections).forEach(([key, el]) => { if (el && room.stations[key]) { const top = docTop(el); list.push({ key, top, at: top - vh * 0.1, win: parseFloat(getComputedStyle(el).paddingTop) || vh * 0.5 }); } });
+    if (!lite && contactEl) { const top = docTop(contactEl); list.push({ key: 'contact', top, at: top + (contactEl.offsetHeight - vh) / 2 }); }
+    stops = list.sort((a, b) => a.at - b.at);
+  }
+  refresh(); addEventListener('resize', () => requestAnimationFrame(refresh));
+
+  const sm = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
+  const pa = { P: new THREE.Vector3(), L: new THREE.Vector3(), ox: 0, oy: 0 }, pb = { P: new THREE.Vector3(), L: new THREE.Vector3(), ox: 0, oy: 0 };
+  let waved = false, wavedC = false, time = 0;
+  // pose of one stop at scroll s
+  function poseOf(stop, s, o) {
+    const vh = innerHeight, k = (s - stop.at) / vh;
+    o.ox = 0; o.oy = 0;
+    if (stop.key === 'studio') {
+      const st = stations.studio, kk = sm(0, 0.35, studioP);
+      o.P.set(...st.from.p).lerp(tmp.set(...st.to.p), kk);
+      o.L.set(...st.from.l).lerp(tmp.set(...st.to.l), kk);
       const ang = (studioP - 0.5) * 0.5;
-      P.set(P.x * Math.cos(ang) + P.z * Math.sin(ang), P.y, -P.x * Math.sin(ang) + P.z * Math.cos(ang));
-      // drop in (0-0.2), scan (0.15-0.8)
+      o.P.set(o.P.x * Math.cos(ang) + o.P.z * Math.sin(ang), o.P.y, -o.P.x * Math.sin(ang) + o.P.z * Math.cos(ang));
+    } else if (stop.key === 'contact') {
+      const st = stations.contact, cin = sm(-1, -0.1, k);
+      o.P.set(...st.p); o.L.set(...st.l);
+      o.P.y += (1 - cin) * 3; o.P.z += (1 - cin) * 4;
+      o.ox = -0.3 * innerWidth;
+    } else {
+      const st = room.stations[stop.key]; st.pose(k, o);
+      // portrait screens: pull back along the view line so each corner still fits the width
+      const f = Math.pow(THREE.MathUtils.clamp(1.3 / camera.aspect, 1, 2.6), 0.78);
+      if (f > 1.001) o.P.sub(o.L).multiplyScalar(f).add(o.L);
+      if (st.fixed) return k;
+      // the scene rides with the section's open window at the top (it scrolls in and out with it, a little slower)
+      const apc = (stop.top - s) + Math.min(stop.win, vh) * 0.5;
+      o.oy = THREE.MathUtils.clamp(vh * 0.5 - apc, -vh * 0.9, vh * 0.9);
+    }
+    return k;
+  }
+  function updateStop(stop, s) {
+    const k = (s - stop.at) / innerHeight;
+    if (stop.key === 'studio') {
       const drop = sm(0.0, 0.2, studioP);
-      [sAds, sAgent].forEach((s, i) => {
+      [sAds, sAgent].forEach((st, i) => {
         const d = THREE.MathUtils.clamp(drop * 1.15 - i * 0.15, 0, 1);
         const bounce = d < 1 ? (1 - d) * (1 - d) * 7 : 0;
-        s.ch.g.position.y = bounce + Math.abs(Math.sin(d * Math.PI * 2)) * (1 - d) * 0.4;
+        st.ch.g.position.y = bounce + Math.abs(Math.sin(d * Math.PI * 2)) * (1 - d) * 0.4;
         const scan = sm(0.15, 0.8, studioP) * 1.75 - 0.02;
-        s.plane.constant = scan; s.planeH.constant = -scan;
-        s.scanRing.position.y = scan; s.scanRing.material.opacity = scan > 0.02 && scan < 1.7 ? 0.9 : 0;
-        s.beam.material.uniforms.uTime.value = time;
-        s.beam.material.uniforms.uAmp.value = 0.6 + 0.4 * Math.sin(time * 1.3 + i);
-        s.ring2.rotation.z = time * (i ? -0.4 : 0.4);
-        s.ch.orbit.rotation.z = Math.sin(time * 1.4) * 0.12;
-        s.ch.body.position.y = s.ch.holo.position.y = Math.sin(time * 1.6 + i) * 0.03;
+        st.plane.constant = scan; st.planeH.constant = -scan;
+        st.scanRing.position.y = scan; st.scanRing.material.opacity = scan > 0.02 && scan < 1.7 ? 0.9 : 0;
+        st.beam.material.uniforms.uTime.value = time;
+        st.beam.material.uniforms.uAmp.value = 0.6 + 0.4 * Math.sin(time * 1.3 + i);
+        st.ring2.rotation.z = time * (i ? -0.4 : 0.4);
+        st.ch.orbit.rotation.z = Math.sin(time * 1.4) * 0.12;
+        st.ch.body.position.y = st.ch.holo.position.y = Math.sin(time * 1.6 + i) * 0.03;
       });
       if (studioP > 0.85 && !waved) { waved = true; wave(gsap, sAds.ch.arm, 2); gsap.delayedCall(0.4, () => wave(gsap, sAgent.ch.arm, 2)); }
       if (studioP < 0.6) waved = false;
       sAds.ch.g.getWorldPosition(anchors.ads); anchors.ads.y += 1.0;
       sAgent.ch.g.getWorldPosition(anchors.agent); anchors.agent.y += 1.0;
-    } else {
-      const st = stations.contact;
-      P.set(...st.p); L.set(...st.l);
-      P.y += (1 - contactIn) * 3; P.z += (1 - contactIn) * 4;
+    } else if (stop.key === 'contact') {
+      if (k > -0.3 && !wavedC) { wavedC = true; wave(gsap, cAds.arm, 3); gsap.delayedCall(0.5, () => wave(gsap, cAgent.arm, 2)); }
+      if (k < -0.8) wavedC = false;
       flapPivot.rotation.x = THREE.MathUtils.lerp(flapPivot.rotation.x, cta ? -Math.PI * 0.95 : 0, 0.12);
       if (cta) paperLaunch = Math.min(1, paperLaunch + 0.02); else paperLaunch = Math.max(0, paperLaunch - 0.03);
       const a = time * 0.8;
@@ -158,33 +214,71 @@ export function createWorld({ canvas, studioEl, contactEl }) {
       const launch = new THREE.Vector3(0.0, 1.2 + paperLaunch * 5, 0.2 + paperLaunch * 6);
       paper.position.lerpVectors(orbitPos, launch, paperLaunch * paperLaunch);
       const ahead = new THREE.Vector3(Math.cos(a + 0.2) * 3.1, 2.3 + Math.sin((a + 0.2) * 2) * 0.25, Math.sin(a + 0.2) * 1.8);
-      paper.lookAt(paperLaunch > 0.05 ? new THREE.Vector3(80, 10, 10) : ahead.add(contact.position));
+      paper.lookAt(paperLaunch > 0.05 ? new THREE.Vector3(CX, 10, 10) : ahead.add(contact.position));
       cAds.body.position.y = Math.sin(time * 2) * 0.03; cAgent.body.position.y = Math.sin(time * 2 + 1) * 0.03;
       cAgent.orbit.rotation.z = Math.sin(time * 1.4) * 0.12;
-    }
+    } else room.stations[stop.key].update(k, time);
+  }
+
+  const t0 = performance.now();
+  const P = new THREE.Vector3(), L = new THREE.Vector3();
+  let last = performance.now(), slow = 0, frames = 0;
+  const groupOf = (key) => (key === 'studio' ? 'studio' : key === 'contact' ? 'contact' : 'room');
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible || !stops.length) return;
+    const now = performance.now(), dt = now - last; last = now;
+    time = (now - t0) / 1000;
+    // adaptive quality: if frames keep running slow, step the pixel ratio down (never back up mid-visit)
+    if (dt < 200) { frames++; if (dt > 26) slow++; if (frames >= 90) { if (slow > 45 && dpr > minDpr) { dpr = Math.max(minDpr, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); } frames = 0; slow = 0; } }
+    pointer.sx += (pointer.x - pointer.sx) * 0.05; pointer.sy += (pointer.y - pointer.sy) * 0.05;
+    const s = getScroll ? getScroll() : scrollY, vh = innerHeight;
+    // which two stops are we between?
+    let ia = 0;
+    while (ia < stops.length - 1 && s > stops[ia + 1].at) ia++;
+    const A = stops[ia], B = s > A.at && stops[ia + 1] ? stops[ia + 1] : null;
+    let t = 0;
+    if (B) { const a0 = A.at + vh * 0.25, b0 = B.at - vh * 0.35; t = b0 > a0 ? sm(a0, b0, s) : sm(A.at, B.at, s); }
+    poseOf(A, s, pa); updateStop(A, s);
+    if (B) { poseOf(B, s, pb); updateStop(B, s); }
+    // neighbours keep their own scroll state too, so nothing pops when they come into view
+    const prev = stops[ia - 1], next = B ? stops[ia + 2] : stops[ia + 1];
+    if (prev) updateStop(prev, s); if (next) updateStop(next, s);
+    if (B && t > 0) {
+      P.lerpVectors(pa.P, pb.P, t); L.lerpVectors(pa.L, pb.L, t);
+      // travelling between two corners: rise a little and pull back, like a crane move along the room
+      const lift = Math.sin(t * Math.PI);
+      P.y += lift * 1.4; P.z += lift * 2.2;
+    } else { P.copy(pa.P); L.copy(pa.L); }
+    const ox = B ? THREE.MathUtils.lerp(pa.ox, pb.ox, t) : pa.ox, oy = B ? THREE.MathUtils.lerp(pa.oy, pb.oy, t) : pa.oy;
+    // groups and lights: only what the camera is looking at (or travelling between)
+    const w = { studio: 0, room: 0, contact: 0 };
+    w[groupOf(A.key)] += B ? 1 - t : 1; if (B) w[groupOf(B.key)] += t;
+    studio.visible = w.studio > 0.001; contact.visible = w.contact > 0.001; room.root.visible = w.room > 0.001;
+    rHemi.intensity = 0.9 * roomLight * w.room; rKey.intensity = 1.6 * roomLight * w.room;
+    rKey.position.set(L.x + 4, 10, 7); rKey.target.position.set(L.x, 0, -1);
+    if (worldEl) { const z = w.studio > 0.5 ? 'studio' : w.contact > 0.5 ? 'contact' : 'room'; if (worldEl.dataset.zone3d !== z) worldEl.dataset.zone3d = z; }
     P.x += pointer.sx * 0.5; P.y -= pointer.sy * 0.25;
     camera.position.copy(P); camera.lookAt(L);
-    const off = station === 'contact' ? -0.3 : 0;
-    camera.setViewOffset(innerWidth, innerHeight, innerWidth * off, 0, innerWidth, innerHeight);
+    camera.setViewOffset(innerWidth, innerHeight, ox, oy, innerWidth, innerHeight);
     renderer.render(scene, camera);
   }
   const ready = (renderer.compileAsync && renderer.extensions.has('KHR_parallel_shader_compile') ? renderer.compileAsync(scene, camera) : Promise.resolve()).catch(() => {}).then(() => { frame(); });
 
-  // visibility: render only while a stage is on screen
+  // visibility: render only while a part of the page that shows the world is on screen
   const vis = new Map();
   const io = new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.isIntersecting)); visible = [...vis.values()].some(Boolean); }, { threshold: 0 });
-  io.observe(studioEl); io.observe(contactEl);
+  [studioEl, contactEl, ...Object.values(sections)].filter(Boolean).forEach((el) => io.observe(el));
 
   return {
     ready,
-    setStation(s) {
-      if (s === station) return;
-      station = s; studio.visible = s === 'studio'; contact.visible = s === 'contact';
-      if (s === 'contact') { contactIn = 0; gsap.to({ v: 0 }, { v: 1, duration: 1.4, ease: 'smooth', onUpdate() { contactIn = this.targets()[0].v; } }); gsap.delayedCall(0.9, () => { wave(gsap, cAds.arm, 3); gsap.delayedCall(0.5, () => wave(gsap, cAgent.arm, 2)); }); }
-    },
+    refresh,
+    setStation() {}, // (kept for callers; the camera now follows the scroll position on its own)
     setStudio(p) { studioP = p; },
     setCTA(v) { cta = v; },
     anchors: () => ({ ads: project(anchors.ads), agent: project(anchors.agent) }),
     setTheme,
+    cam: () => [camera.position.x, camera.position.y, camera.position.z],
+    info: () => ({ dpr: renderer.getPixelRatio(), calls: renderer.info.render.calls, tris: renderer.info.render.triangles, stops: stops.map((x) => x.key), zone: worldEl?.dataset.zone3d }),
   };
 }

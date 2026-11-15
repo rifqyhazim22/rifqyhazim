@@ -28,6 +28,7 @@ export const dict = {
     'ask.title': 'Tanya aja soal',
     'a1': 'Scale-up toko marketplace', 'a2': 'ROAS riil dari invoice', 'a3': 'Patokan BEP ROAS', 'a4': 'Struktur kampanye per brand', 'a5': 'Tim AI agent buat operasional', 'a6': 'Routine tutup bulan otomatis',
     'jr.title': 'Perjalanan', 'jr.now': 'sekarang',
+    'photo.title': 'Ini aku', 'photo.alt': 'Rifqy Hazim di meja kerja dengan laptop',
     'talk.title': 'Yuk ngobrol', 'talk.h': 'Punya brief, toko, atau ide agen? Kirim aja.', 'talk.loc': 'Berbasis di Jakarta, Indonesia',
     'cta.send': 'Kirim pesan', 'cta.cv': 'Unduh CV', 'cta.cvShort': 'CV', 'cta.cvAria': 'Unduh CV (PDF)', 'cta.soon': 'segera', 'cta.cvSoon': 'CV menyusul, segera', top: 'Ke atas', 'links.label': 'Profil',
     'cur.link': 'Buka', 'cur.card': 'Lihat', 'cur.cta': 'Kirim', 'menu.open': 'Buka menu', 'menu.close': 'Tutup menu', 'menu.label': 'Menu navigasi', 'swipe': 'geser ke bawah buat tutup',
@@ -66,6 +67,7 @@ export const dict = {
     'ask.title': 'Ask me about',
     'a1': 'Scaling marketplace stores', 'a2': 'Real ROAS from invoices', 'a3': 'BEP ROAS benchmarks', 'a4': 'Campaign structure per brand', 'a5': 'AI agent teams for operations', 'a6': 'Automated month-end close',
     'jr.title': 'Journey', 'jr.now': 'now',
+    'photo.title': 'This is me', 'photo.alt': 'Rifqy Hazim at his desk with a laptop',
     'talk.title': "Let's talk", 'talk.h': 'Got a brief, a store, or an agent idea? Just send it.', 'talk.loc': 'Based in Jakarta, Indonesia',
     'cta.send': 'Send a message', 'cta.cv': 'Download CV', 'cta.cvShort': 'CV', 'cta.cvAria': 'Download CV (PDF)', 'cta.soon': 'soon', 'cta.cvSoon': 'CV coming soon', top: 'Back to top', 'links.label': 'Profiles',
     'cur.link': 'Open', 'cur.card': 'View', 'cur.cta': 'Send', 'menu.open': 'Open menu', 'menu.close': 'Close menu', 'menu.label': 'Navigation menu', 'swipe': 'swipe down to close',
@@ -90,6 +92,7 @@ export function applyDict(doc, l) {
   doc.documentElement.setAttribute('lang', l);
   doc.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = tr(el.getAttribute('data-i18n')); });
   doc.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', tr(el.getAttribute('data-i18n-aria'))); });
+  doc.querySelectorAll('[data-i18n-alt]').forEach((el) => { el.setAttribute('alt', tr(el.getAttribute('data-i18n-alt'))); });
   doc.querySelectorAll('[data-lang-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute('data-lang-btn') === l)));
 }
 if (KEYWORD_COPY) for (const l of ['id', 'en']) Object.assign(dict[l], PROPOSALS.dict[l]); // keyword copy proposals (off by default)
