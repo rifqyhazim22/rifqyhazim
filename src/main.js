@@ -551,27 +551,36 @@ async function boot() {
     const cn = ['#cn1', '#cn2', '#cn3'].map((s) => $(s));
     const adsEl = $('#castAds'), agentEl = $('#castAgent');
     const hostEl = $('.stage-studio .stage-sticky');
+    const spriteBox = (fig) => (fig.querySelector('.studio-sprite') || fig).getBoundingClientRect();
     const paintLiteConnectors = () => {
       if (!adsEl || !agentEl || !hostEl) return;
       const host = hostEl.getBoundingClientRect();
       const ads = adsEl.getBoundingClientRect(), ag = agentEl.getBoundingClientRect();
-      if (ads.width < 2 || ag.width < 2 || host.width < 2) return;
+      const adsS = spriteBox(adsEl), agS = spriteBox(agentEl);
+      if (adsS.width < 2 || agS.width < 2 || host.width < 2) return;
+      // 01 → ads shoulder, 02 → agent head, 03 → agent orbs (right, lower)
       const anchors = [
-        { x: ads.left + ads.width * 0.66, y: ads.top + ads.height * 0.44 },
-        { x: ag.left + ag.width * 0.46, y: ag.top + ag.height * 0.36 },
-        { x: ag.left + ag.width * 0.74, y: ag.top + ag.height * 0.64 },
+        { x: adsS.left + adsS.width * 0.72, y: adsS.top + adsS.height * 0.32, mid: ads.left + ads.width / 2 },
+        { x: agS.left + agS.width * 0.50, y: agS.top + agS.height * 0.18, mid: ag.left + ag.width / 2 },
+        { x: agS.left + agS.width * 0.96, y: agS.top + agS.height * 0.52, mid: ag.left + ag.width / 2 },
       ];
+      const rnd = (n) => Math.round(n * 10) / 10;
       cards.forEach((c, i) => {
         const r = c.getBoundingClientRect();
         const visible = r.width > 0 && +getComputedStyle(c).opacity >= 0.4;
         cn[i].classList.toggle('on', visible);
         if (!visible) return;
         const a = anchors[i];
-        const fromLeft = r.left + r.width / 2 < a.x;
+        const fromLeft = r.left + r.width / 2 < a.mid;
         const sx = (fromLeft ? r.right : r.left) - host.left;
-        const sy = r.top + Math.min(26, r.height * 0.22) - host.top;
+        // if the card sits above or below the character, start the line at that edge so the elbow stays short
+        const above = r.bottom < a.y + 8;
+        const below = r.top > a.y - 8;
+        const sy = (below ? r.top + 12 : above ? r.bottom - 8 : r.top + Math.min(26, r.height * 0.22)) - host.top;
         const ex = a.x - host.left, ey = a.y - host.top;
-        cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
+        const mx = above || below ? (fromLeft ? sx : (sx * 2 + ex) / 3) : (sx + ex) / 2;
+        const my = above || below ? (sy + ey) / 2 : sy;
+        cn[i].setAttribute('d', `M${rnd(sx)},${rnd(sy)} L${rnd(mx)},${rnd(my)} L${rnd(ex)},${rnd(ey)}`);
       });
     };
     paintLiteConnectors();

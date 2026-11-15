@@ -1120,21 +1120,45 @@ html:not(.has-world)[data-theme="dark"] .studio-plat {
   box-shadow:0 0 0 2px color-mix(in srgb, var(--fig-ring) 55%, transparent), inset 0 0 0 5px color-mix(in srgb, var(--fig-ring) 30%, transparent), 0 10px 20px rgba(0,0,0,.35);
 }
 
-@media (max-width: 900px) {
+/* tablets (and narrow laptops in lite): keep the 3-column "around the pair" layout, with a wide enough middle */
+@media (max-width: 900px) and (min-width: 601px) {
+  html:not(.has-world) .stage-studio { padding:80px 0 72px; }
+  html:not(.has-world) .studio-cards { row-gap:18px; column-gap:14px; grid-template-columns:minmax(0,1fr) minmax(200px,0.9fr) minmax(0,1fr); }
+  html:not(.has-world) .holo-card { padding:14px 16px; }
+  html:not(.has-world) .holo-card h3 { font-size:16px; }
+  html:not(.has-world) .holo-card p { font-size:13px; }
+  .studio-pod { max-width:130px; }
+  .studio-sprite { max-width:80px; width:62%; }
+}
+/* phones: cards above and below a dedicated character row, so the pair can be large and still read 01 left / 02–03 right */
+@media (max-width: 600px) {
   html:not(.has-world) .stage-studio { padding:72px 0 64px; }
-  html:not(.has-world) .studio-cards { row-gap:14px; column-gap:8px; grid-template-columns:minmax(0,1fr) minmax(96px,0.62fr) minmax(0,1fr); }
-  html:not(.has-world) .holo-card { padding:10px 10px 12px; border-radius:16px; }
-  html:not(.has-world) .holo-card h3 { font-size:14px; margin:4px 0 6px; }
+  html:not(.has-world) .studio-cards {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    row-gap:12px; column-gap:10px;
+  }
+  html:not(.has-world) #hc1 { grid-column:1; grid-row:1; align-self:stretch; }
+  html:not(.has-world) #hc2 { grid-column:2; grid-row:1; align-self:stretch; }
+  html:not(.has-world) .studio-cast {
+    grid-column:1 / span 2; grid-row:2; align-self:center; justify-self:center;
+    width:100%; max-width:260px; gap:clamp(16px, 6vw, 28px); padding:6px 0 8px;
+  }
+  html:not(.has-world) #hc3 { grid-column:2; grid-row:3; align-self:start; }
+  html:not(.has-world) .holo-card { padding:12px 12px 14px; border-radius:16px; }
+  html:not(.has-world) .holo-card h3 { font-size:15px; margin:4px 0 6px; }
   html:not(.has-world) .holo-card p { font-size:12px; line-height:1.4; }
   html:not(.has-world) .holo-card .num { font-size:10px; }
-  .studio-tag { font-size:8px; padding:3px 5px; letter-spacing:.06em; gap:4px; white-space:normal; text-align:center; line-height:1.15; }
-  .studio-pod { max-width:100px; }
-  .studio-sprite { max-width:58px; }
+  .studio-tag { font-size:8.5px; padding:3px 7px; letter-spacing:.08em; gap:5px; white-space:nowrap; }
+  .studio-pod { max-width:120px; width:100%; aspect-ratio:3/4; }
+  .studio-sprite { max-width:80px; width:64%; }
 }
 @media (max-width: 380px) {
-  html:not(.has-world) .studio-cards { column-gap:6px; grid-template-columns:minmax(0,1fr) minmax(84px,0.58fr) minmax(0,1fr); }
-  html:not(.has-world) .holo-card { padding:8px 8px 10px; }
-  html:not(.has-world) .holo-card h3 { font-size:13px; }
+  html:not(.has-world) .studio-cards { column-gap:8px; row-gap:10px; }
+  html:not(.has-world) .holo-card { padding:10px 10px 12px; }
+  html:not(.has-world) .holo-card h3 { font-size:14px; }
   html:not(.has-world) .holo-card p { font-size:12px; line-height:1.35; }
-  .studio-pod { max-width:88px; }
+  html:not(.has-world) .studio-cast { max-width:220px; gap:12px; }
+  .studio-pod { max-width:104px; }
+  .studio-tag { font-size:8px; padding:3px 6px; letter-spacing:.06em; }
 }
