@@ -1,6 +1,6 @@
 // Scroll capture for review: frames of the 3D world while scrolling from the studio down to contact and back up
 // (one screenshot per scroll step, so it is smooth however slow the renderer is). Needs `npm run preview`.
-// Frames go to /tmp/vframes; turn them into an mp4 with ffmpeg. Usage: node scripts/scroll-video.mjs [light|dark] [steps]
+// Frames go to $VFRAMES (default /tmp/vframes); turn them into an mp4 with ffmpeg. Usage: [PART=down|up] node scripts/scroll-video.mjs [light|dark] [steps]
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
 const dir = process.env.VFRAMES || '/tmp/vframes'; mkdirSync(dir, { recursive: true });
@@ -15,9 +15,12 @@ await p.waitForFunction(() => document.querySelector('#world')?.classList.contai
 const { start, end } = await p.evaluate(() => { const k = document.querySelector('#kerja'), c = document.querySelector('#ngobrol'), top = (e) => e.getBoundingClientRect().top + scrollY; return { start: top(k) - innerHeight * 0.6, end: top(c) + (c.offsetHeight - innerHeight) / 2 }; });
 const N = Number(process.argv[3] || 260);
 const ys = []; for (let i = 0; i <= N; i++) { const t = i / N; ys.push(start + (end - start) * (0.5 - 0.5 * Math.cos(Math.PI * t))); }
-const path = [...ys, ...Array(8).fill(end), ...ys.slice().reverse(), ...Array(8).fill(start)];
-let f = 0;
-await p.evaluate((y) => scrollTo(0, y), start); await p.waitForTimeout(2500);
+// PART=down|up renders one half in its own browser (run both in parallel; frames are numbered so they concatenate)
+const part = process.env.PART || 'all';
+const down = [...ys, ...Array(8).fill(end)], up = [...ys.slice().reverse(), ...Array(8).fill(start)];
+const path = part === 'down' ? down : part === 'up' ? up : [...down, ...up];
+let f = part === 'up' ? down.length : 0;
+await p.evaluate((y) => scrollTo(0, y), path[0]); await p.waitForTimeout(2500);
 for (const y of path) {
   await p.evaluate((y) => scrollTo(0, y), y);
   await p.waitForTimeout(60);
