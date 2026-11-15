@@ -1,15 +1,14 @@
-import '@fontsource/plus-jakarta-sans/400.css';
-import '@fontsource/plus-jakarta-sans/500.css';
-import '@fontsource/plus-jakarta-sans/600.css';
-import '@fontsource/instrument-serif/400.css';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource/plus-jakarta-sans/latin-400.css';
+import '@fontsource/plus-jakarta-sans/latin-500.css';
+import '@fontsource/plus-jakarta-sans/latin-600.css';
+import '@fontsource/instrument-serif/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-600.css';
 import 'lenis/dist/lenis.css';
 import './style.css';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CustomEase } from 'gsap/CustomEase';
-import Lenis from 'lenis';
 import { initLang, setLang, onLang, t, lang } from './i18n.js';
 import { initCursor } from './cursor.js';
 import { ADS, AGENT, spriteSVG, LAMP_SVG } from './sprites.js';
@@ -160,14 +159,20 @@ const cursor = initCursor();
 const clocks = initClocks();
 
 // ---------- Smooth scroll (Lenis, lerp 0.08 like the reference)
+// Deferred so the initial JS task does not also parse and construct Lenis (helps mobile TBT).
 let lenis = null;
+window.__gsap = gsap; // exposed for local screenshot scripts only
 if (!reduced) {
-  lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-  window.__lenis = lenis;
-  window.__gsap = gsap; // exposed for local screenshot scripts only
+  requestAnimationFrame(() => {
+    import('lenis').then((mod) => {
+      if (lenis) return;
+      lenis = new mod.default({ lerp: 0.08, smoothWheel: true });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+      window.__lenis = lenis;
+    });
+  });
 }
 const jump = (y) => { if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y); };
 
@@ -427,10 +432,10 @@ document.querySelectorAll('.wm-name').forEach((el) => {
   });
 });
 // ---------- 3D, deferred: the page paints and becomes interactive with the 2D desk first.
-// Three.js + the scene load after the intro, on the first interaction / scroll towards the studio, or once the
-// browser is idle a few seconds after load, and are built in steps (yielding to the main thread between them).
-// The 2D desk crossfades into the 3D one when it is ready. Layout is decided up front, so nothing jumps.
-const want3D = tier !== 'off';
+// Three.js loads only on the desktop "full" tier (after the intro, on interaction / scroll towards the studio,
+// or once the browser is idle a few seconds after load). Phones and tablets stay on the 2D desk and 2D kerja
+// sprites, so they never download the three.js chunk. Built in steps, yielding to the main thread between them.
+const want3D = tier === 'full';
 const yieldMain = () => new Promise((r) => (window.scheduler?.yield ? window.scheduler.yield().then(r) : setTimeout(r, 0)));
 let studioP = 0, worldReady = false;
 // scroll position fed to the 3D world, smoothed by a ScrollTrigger scrub (the camera eases after the page, both ways)
@@ -487,6 +492,7 @@ async function load3D() {
   $('#world').classList.add('is-ready');
 }
 function schedule3D() {
+  if (!want3D) return;
   const go = () => { evs.forEach((e) => removeEventListener(e, go)); io.disconnect(); load3D(); };
   const evs = ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart'];
   evs.forEach((e) => addEventListener(e, go, { passive: true }));
@@ -501,10 +507,13 @@ function schedule3D() {
 async function boot() {
   if (!reduced) root.classList.add('motion');
   if (want3D) {
-    root.classList.add('three-pending');
-    if (tier === 'lite') { root.classList.add('lite'); $('.hero-stage').prepend($('#heroCanvas'), $('#bubble')); }
-    else root.classList.add('has-world');
-  } else root.classList.add('no-webgl');
+    root.classList.add('three-pending', 'has-world', 's3d');
+    root.classList.remove('no-webgl', 'lite');
+  } else {
+    root.classList.add('no-webgl');
+    root.classList.remove('three-pending', 's3d', 'has-world');
+    if (tier === 'lite') root.classList.add('lite');
+  }
 
   if (root.classList.contains('has-world')) {
     // Studio stage: scroll progress, header/cursor styling, overlay sync. Works before the world arrives
@@ -638,21 +647,27 @@ async function boot() {
   pre.classList.add('pre-2d');
   const c = { v: 0 };
   const tl = gsap.timeline();
+  if (small) gsap.set('.identity, .identity .line > span', { opacity: 1, yPercent: 0 });
   tl.fromTo('.pre-name .wm-l, .pre-name .wm-dot', { yPercent: -140, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: 'bounce.out', stagger: 0.045 }, 0.1)
     .fromTo('.pre-name .wm-name > .wm-br', { x: (i) => (i ? 40 : -40), opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.75)
     .fromTo('.pre-name .wm-sub', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 1.1);
-  tl.to(c, { v: 100, duration: small ? 1.1 : 1.5, ease: 'power2.inOut', onUpdate: () => { counter.textContent = String(Math.round(c.v)).padStart(3, '0'); } }, 0)
-    .to(pre, { yPercent: -100, borderBottomLeftRadius: 48, borderBottomRightRadius: 48, duration: small ? 0.6 : 0.8, ease: 'smooth' }, small ? '+=0.15' : '+=0.35')
-    .add(() => { pre.remove(); if (want3D) schedule3D(); })
-    .from('.identity .line > span', { yPercent: 110, duration: 0.9, ease: 'power4.out', stagger: 0.12 }, '-=0.5')
-    .to('[data-hero]', { opacity: 1, duration: 0.01 }, '<')
+  // Mobile: shorter count and lift, and the identity starts as the sheet rises so hero type can be LCP
+  // instead of the "100" counter. Desktop timing stays close to the original intro.
+  const countDur = small ? 0.7 : 1.5, liftDur = small ? 0.45 : 0.8, liftDelay = small ? '+=0.05' : '+=0.35';
+  tl.to(c, { v: 100, duration: countDur, ease: 'power2.inOut', onUpdate: () => { counter.textContent = String(Math.round(c.v)).padStart(3, '0'); } }, 0)
+    .to(pre, { yPercent: -100, borderBottomLeftRadius: 48, borderBottomRightRadius: 48, duration: liftDur, ease: 'smooth' }, liftDelay)
+    .add(() => { pre.remove(); if (want3D) schedule3D(); bindScrollFX(); })
+    .from('.identity .line > span', { yPercent: small ? 0 : 110, duration: small ? 0.01 : 0.9, ease: 'power4.out', stagger: 0.12 }, small ? '<' : '-=0.5')
+    .to(small ? '[data-hero]:not(.identity)' : '[data-hero]', { opacity: 1, duration: 0.01 }, '<')
     .add(() => clocks.reveal(), '<0.5')
     .fromTo('.avail, .positioning, .lead, .version-chips, .time-card', { y: 24, clipPath: 'inset(-30% -30% 100% -30%)' }, { y: 0, clipPath: 'inset(-30% -30% -30% -30%)', duration: 0.7, ease: 'power3.out', stagger: 0.08, clearProps: 'clipPath' }, '<0.2')
     .fromTo('.scene2d', { y: 16, clipPath: 'inset(0% 0% 100% 0%)' }, { y: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power3.out', clearProps: 'transform,clipPath' }, '<')
     .add(() => decode($('.positioning'), 1.0), '<0.1')
     .add(() => { if (m) openDetail(m[1], false); if (!restore) waiter.schedule(1700); });
 
-  gsap.to('.hero-copy', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  function bindScrollFX() {
+    if (bindScrollFX.done) return; bindScrollFX.done = true;
+    gsap.to('.hero-copy', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   // holo cards are driven by the studio stage when the world layout is on; otherwise they reveal like any card
   ScrollTrigger.batch(root.classList.contains('has-world') ? '[data-reveal]:not(.holo-card)' : '[data-reveal]', {
     start: 'top 88%',
@@ -678,8 +693,6 @@ async function boot() {
   });
   gsap.set('#proyek .grid3 > .card, .no-webgl .grid3 > .card', { rotateX: -18, transformOrigin: '50% 100%' });
   // overwrite 'auto' (not true) so the scroll spin only takes over `rotate` and leaves the sticker's entrance alone
-  // back from an auto-update reload: skip the intro and land where the visitor was
-  if (restore) { tl.progress(1); requestAnimationFrame(() => { ScrollTrigger.refresh(); jump(restore.y); }); }
   ScrollTrigger.create({ trigger: '.contact', start: 'top bottom', end: 'bottom top', onUpdate: (st) => gsap.to('.sticker', { rotate: st.progress * 120, duration: 0.4, overwrite: 'auto' }) });
 
   // ---------- Section-level entrances (replay on reverse scroll)
@@ -710,6 +723,10 @@ async function boot() {
   // Footer contents, staggered
   gsap.fromTo('.footer-inner > *', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', stagger: 0.08,
     scrollTrigger: { trigger: '.site-footer', start: 'top bottom', toggleActions: 'play none none reverse' } });
+  } // bindScrollFX
+
+  // back from an auto-update reload: skip the intro and land where the visitor was
+  if (restore) { tl.progress(1); requestAnimationFrame(() => { ScrollTrigger.refresh(); jump(restore.y); }); }
 }
 const THREE_clamp = (x) => Math.min(1, Math.max(0, x));
 

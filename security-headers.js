@@ -41,5 +41,18 @@ export const vercelConfig = () => ({
     { source: '/version.json', headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }] },
     // cafe music loops (renamed if they ever change)
     { source: '/audio/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    // desk photo and any other static images in /img (filenames change when the asset changes)
+    { source: '/img/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    // unhashed icons and share images: 30 days (not immutable, so a replacement is picked up)
+    { source: '/favicon.svg', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/favicon-16.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/favicon-32.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/favicon-32-dark.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/apple-touch-icon.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/icon-192.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/icon-512.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/icon-512-maskable.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/og-image.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
+    { source: '/og-image-en.png', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
   ],
 });

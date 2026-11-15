@@ -384,6 +384,7 @@ html:not(.has-world) .stage-studio { padding:var(--section-y) 0; background:var(
 html:not(.has-world) .studio-cards { max-width:1200px; margin:0 auto; padding:0 24px; }
 @media (max-width: 600px) { html:not(.has-world) .stage-studio { padding:64px 0; } html:not(.has-world) .studio-cards { padding:0 20px; } }
 .pre-count { position:absolute; right:40px; bottom:32px; font-size:44px; font-weight:600; color:var(--teal); letter-spacing:.06em; }
+@media (max-width: 900px) { .pre-count { font-size:22px; right:20px; bottom:20px; } }
 .preloader { will-change:transform; }
 .t-bars.big { height:60%; gap:5%; width:60%; } .t-bars.big i { flex:1; width:auto; }
 .float-chip { box-shadow:0 10px 24px rgba(26,25,22,.15); }

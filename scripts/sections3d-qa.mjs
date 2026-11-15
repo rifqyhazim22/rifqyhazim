@@ -16,7 +16,6 @@ async function open(opts) {
   p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(URL + '/'); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
   await p.mouse.move(200, 200).catch(() => {}); await p.evaluate(() => window.dispatchEvent(new Event('pointermove')));
-  await p.waitForFunction(() => document.querySelector('#world')?.classList.contains('is-ready'), null, { timeout: 120000 });
   return { ctx, p };
 }
 const to = (p, y) => p.evaluate((y) => { window.scrollTo(0, y); }, y);
@@ -37,6 +36,16 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) {
   if (only && only !== dev) continue;
   for (const scheme of ['light', 'dark']) {
     const { ctx, p } = await open({ ...opts, colorScheme: scheme });
+    if (dev === 'phone') {
+      // lite tier must not autoload three.js; stay on the 2D desk
+      await p.waitForTimeout(5500);
+      const state = await p.evaluate(() => ({ tier: document.documentElement.dataset.tier, scene: !!window.__scene, world: !!window.__world, three: [...document.querySelectorAll('script')].some((s) => /voxel|three/i.test(s.src)) }));
+      console.log(dev, scheme, JSON.stringify(state));
+      ok(`${dev}-${scheme}: no 3D autoload`, !state.scene && !state.world && !state.three, JSON.stringify(state));
+      await ctx.close();
+      continue;
+    }
+    await p.waitForFunction(() => document.querySelector('#world')?.classList.contains('is-ready'), null, { timeout: 120000 });
     const info = await p.evaluate(() => window.__world?.info());
     console.log(dev, scheme, JSON.stringify(info));
     const ms = await marks(p);

@@ -128,7 +128,11 @@
         <div class="sec-title"><span class="rule"></span><h2 id="photoTitle" data-i18n="photo.title">Ini aku</h2><span class="rule"></span></div>
         <p class="photo-intro" data-reveal><span class="photo-name serif">Rifqy Hazim</span><span class="photo-role mono">Ads &amp; E-commerce Specialist · AI Agent Orchestrator</span><span class="photo-loc mono" data-i18n="talk.loc">Berbasis di Jakarta, Indonesia</span></p>
         <figure class="photo-card" data-reveal>
-          <picture><source srcset="/img/rifqy-desk.webp" type="image/webp"><img src="/img/rifqy-desk.jpg" width="886" height="790" loading="lazy" decoding="async" data-i18n-alt="photo.alt" alt="Rifqy Hazim di meja kerja dengan laptop"></picture>
+          <picture>
+            <source type="image/avif" srcset="/img/rifqy-desk-560.avif 560w, /img/rifqy-desk-886.avif 886w" sizes="(max-width: 600px) calc(100vw - 40px), 560px">
+            <source type="image/webp" srcset="/img/rifqy-desk-560.webp 560w, /img/rifqy-desk-886.webp 886w" sizes="(max-width: 600px) calc(100vw - 40px), 560px">
+            <img src="/img/rifqy-desk.jpg" width="886" height="790" loading="lazy" decoding="async" data-i18n-alt="photo.alt" alt="Rifqy Hazim di meja kerja dengan laptop">
+          </picture>
         </figure>
       </div>
     </section>

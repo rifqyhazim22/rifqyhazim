@@ -175,6 +175,25 @@ const notFound = () => `<!doctype html>
 </html>
 `;
 
+
+/** Preload the 3 Latin fonts on the hero/UI critical path (discovered only after CSS otherwise). */
+function injectFontPreloads(html, dir) {
+  const assetsDir = path.join(dir, 'assets');
+  if (!fs.existsSync(assetsDir)) return html;
+  if (html.includes('rel="preload" as="font"')) return html;
+  const files = fs.readdirSync(assetsDir);
+  const want = [
+    /^plus-jakarta-sans-latin-400-normal-.*\.woff2$/,
+    /^plus-jakarta-sans-latin-600-normal-.*\.woff2$/,
+    /^instrument-serif-latin-400-normal-.*\.woff2$/,
+  ];
+  const tags = want.map((re) => files.find((f) => re.test(f))).filter(Boolean)
+    .map((f) => `  <link rel="preload" as="font" type="font/woff2" href="/assets/${f}" crossorigin />`)
+    .join('\n');
+  if (!tags) return html;
+  return html.replace('</title>', '</title>\n' + tags);
+}
+
 export default function sitePlugin() {
   let outDir = 'dist';
   return {
@@ -197,7 +216,9 @@ export default function sitePlugin() {
       const idx = path.join(outDir, 'index.html');
       if (!fs.existsSync(idx)) return;
       const emit = (fileName, source) => { const f = path.join(outDir, fileName); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, source); };
-      emit('en/index.html', prerender(fs.readFileSync(idx, 'utf8'), 'en'));
+      const idHtml = injectFontPreloads(fs.readFileSync(idx, 'utf8'), outDir);
+      fs.writeFileSync(idx, idHtml);
+      emit('en/index.html', injectFontPreloads(prerender(idHtml, 'en'), outDir));
       emit('robots.txt', robots());
       emit('sitemap.xml', sitemap());
       emit('site.webmanifest', manifest());
