@@ -1,15 +1,19 @@
 #!/bin/sh
-# audio-loop.sh in.mp3 out.mp3 [START] [END] [XFADE]
-# Seamless background loop of in.mp3 from START to END seconds (defaults 3 74 3), loudness-normalised (about -19 LUFS)
-# and encoded at 112 kb/s. The XFADE seconds of audio right after END fade out over the head of the loop, so the jump
-# from the end back to the start is continuous. The loop is exactly END-START seconds long. Needs XFADE s of audio after END.
+# Recipes for the cafe loops in public/audio (ffmpeg). Both end around -19 LUFS, 112 kb/s mp3.
 #
-# Current files (sources: the original ElevenLabs takes):
-#   cafe-day.mp3   = audio-loop.sh day-raw.mp3   cafe-day.mp3 3 71    -> 68 s: plays 0:00-1:08 of the earlier 71 s day loop
-#   cafe-night.mp3 = earlier recipe: source 3-74 s with source 0-3 s crossfaded onto its tail -> 71 s (unchanged)
+# day   : audio-loop.sh day OLD71.mp3 public/audio/cafe-day.mp3
+#         OLD71 = the earlier 71 s day loop (git show 9cfe23d:public/audio/cafe-day.mp3). Rifqy picked 0:00-1:08 of it.
+#         Output = exactly 0:00-1:08 of OLD71 and nothing outside it: 0:00-1:05 as is, then 1:05-1:08 crossfaded into
+#         0:00-0:03. The site plays it from 0:00 once, then loops from 0:03 (LOOP_START.day = 3 in src/sound.js).
+# night : audio-loop.sh night SRC.mp3 public/audio/cafe-night.mp3   (SRC = the original generation)
+#         Source 3-74 s with source 0-3 s crossfaded onto its tail -> 71 s whole-file loop.
 set -e
-IN="$1"; OUT="$2"; S="${3:-3}"; E="${4:-74}"; X="${5:-3}"
-ffmpeg -y -hide_banner -loglevel error -i "$IN" -ar 44100 /tmp/_loop.wav
-ffmpeg -y -hide_banner -loglevel error -ss "$E" -t "$X" -i /tmp/_loop.wav -ss "$S" -to "$E" -i /tmp/_loop.wav \
-  -filter_complex "[0:a][1:a]acrossfade=d=$X:c1=qsin:c2=qsin[x];[x]dynaudnorm=f=750:g=41:m=4,loudnorm=I=-19:TP=-2:LRA=11,aresample=44100[o]" \
-  -map "[o]" -ac 2 -c:a libmp3lame -b:a 112k "$OUT"
+MODE="$1"; IN="$2"; OUT="$3"; T=/tmp/_loop
+ffmpeg -y -hide_banner -loglevel error -i "$IN" -ar 44100 $T.wav
+if [ "$MODE" = day ]; then
+  ffmpeg -y -hide_banner -loglevel error -i $T.wav -t 65 ${T}_a.wav
+  ffmpeg -y -hide_banner -loglevel error -ss 65 -to 68 -i $T.wav -t 3 -i $T.wav -filter_complex "[0:a][1:a]acrossfade=d=3:c1=qsin:c2=qsin" ${T}_x.wav
+  ffmpeg -y -hide_banner -loglevel error -i ${T}_a.wav -i ${T}_x.wav -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1,asetpts=N/SR/TB,loudnorm=I=-19:TP=-2:LRA=11,aresample=44100" -ac 2 -c:a libmp3lame -b:a 112k "$OUT"
+else
+  ffmpeg -y -hide_banner -loglevel error -ss 3 -to 74 -i $T.wav -t 3 -i $T.wav -filter_complex "[0:a][1:a]acrossfade=d=3:c1=qsin:c2=qsin[x];[x]dynaudnorm=f=750:g=41:m=4,loudnorm=I=-19:TP=-2:LRA=11,aresample=44100[o]" -map "[o]" -ac 2 -c:a libmp3lame -b:a 112k "$OUT"
+fi

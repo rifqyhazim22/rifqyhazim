@@ -6,6 +6,10 @@
 let ctx = null, master = null, musicBus = null, pad = null, on = false;
 let mode = 'day', cur = null; // cur = { src, gain, mode }
 const TRACKS = { day: '/audio/cafe-day.mp3', night: '/audio/cafe-night.mp3' };
+// Where each loop restarts after its first pass. The day file plays its 68 s once from 0:00; its last 3 s already
+// fade from the end into 0:00-0:03, so later passes jump back to 0:03 and the seam is continuous (see audio-loop.sh).
+// The night file is a whole-file loop.
+const LOOP_START = { day: 3, night: 0 };
 const buffers = {};
 const listeners = new Set();
 const PAD_LEVEL = 0.05, MUSIC_LEVEL = 1;
@@ -55,7 +59,7 @@ async function play(m, fade) {
   try { buf = await load(m); } catch { if (on && !cur) setPadLevel(PAD_LEVEL, 1.2); return; }
   if (!on || m !== mode || cur?.mode === m) return;
   const g = ctx.createGain(); g.gain.value = 0; g.connect(musicBus);
-  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(g); src.start();
+  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.loopStart = Math.min(LOOP_START[m] || 0, buf.duration - 1); src.loopEnd = buf.duration; src.connect(g); src.start();
   stopCur(fade);
   ramp(g.gain, 1, fade); setPadLevel(0, 1);
   cur = { src, gain: g, mode: m };
