@@ -965,3 +965,33 @@ html:not([data-theme="dark"]) .connectors path { stroke:#0F6E6A; }
 .has-world .world canvas { position:relative; z-index:1; }
 /* lite: the hero sheet ends in the same rounded edge as the full layout, so the photo window opens under a soft lip */
 .s3d:not(.has-world) .sheet-hero { border-radius:0 0 var(--r-sheet) var(--r-sheet); box-shadow:0 24px 50px rgba(0,0,0,.14); }
+
+/* ---------- Desktop header: one row, every control 36px tall, the same 8px between controls.
+   Brand (wordmark + clock) on the left; nav and controls grouped on the right. */
+@media (min-width: 901px) {
+  .header-inner { gap:20px; }
+  .hdr-clock { margin-right:0; margin-left:-8px; }
+  .nav { margin-left:auto; height:36px; padding:3px; align-items:center; flex:none; }
+  .nav a { display:inline-flex; align-items:center; height:30px; padding:0 14px; line-height:1; }
+  .nav-pill { top:3px; height:30px; }
+  .toggles { gap:8px; flex:none; }
+  .toggles .lang-chip { height:36px; padding:0 4px; gap:2px; border-radius:999px; }
+  .toggles .lang-chip button { height:28px; min-width:30px; padding:0 6px; border-radius:999px; }
+  .toggles .sound-toggle { width:36px; height:36px; }
+  .dl-group.dl-hdr { flex-wrap:nowrap; gap:8px; }
+  .dl-hdr .dl-chip { height:36px; min-height:36px; padding:0 12px; }
+  .toggles .theme-switch { height:36px; padding:3px; align-items:center; }
+  .toggles .theme-switch button { width:28px; height:28px; }
+  .toggles .theme-switch .ts-thumb { width:28px; top:3px; bottom:auto; height:28px; }
+}
+@media (min-width: 901px) and (max-width: 1240px) {
+  .header-inner { gap:14px; }
+  .nav a { padding:0 10px; font-size:14px; }
+  .toggles, .dl-group.dl-hdr { gap:6px; }
+  .dl-hdr .dl-chip { padding:0 10px; }
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  .header-inner { gap:10px; }
+  .nav a { padding:0 8px; font-size:13.5px; }
+  .dl-hdr .dl-chip { padding:0 9px; }
+}
