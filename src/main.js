@@ -124,6 +124,7 @@ if (musicChoice() === 'yes') {
   const go = (e) => {
     if (isOn()) { evs.forEach((n) => removeEventListener(n, go, true)); return; }
     if (e.target.closest?.('[data-sound-btn], .vol-pop, .waiter')) return; // those controls decide for themselves
+    if (waiter?.busy) return; // the welcome-back card asks first (once per session)
     startMusic();
     setTimeout(() => { if (isRunning()) evs.forEach((n) => removeEventListener(n, go, true)); else { setSound(false); syncSoundBtns(); } }, 400);
   };
@@ -133,7 +134,7 @@ if (musicChoice() === 'yes') {
 // ---------- Auto-update: a new deploy is picked up without a manual refresh (see update.js)
 const restore = takeRestore();
 initUpdates({ t, onLang, isBusy: () => !!openKey || menuOpen || wiping, isPlaying: isMusicPlaying });
-waiter = initWaiter({ t, onLang, reduced, onYes: () => { startMusic(); tick(990); }, isBlocked: () => !!openKey || menuOpen || wiping });
+waiter = initWaiter({ t, onLang, reduced, onYes: () => { startMusic(); tick(990); }, onNo: () => { if (isOn()) { setSound(false); syncSoundBtns(); } }, isBlocked: () => !!openKey || menuOpen || wiping });
 
 // ---------- 2D fallback art
 $('#spriteAds').innerHTML = spriteSVG(ADS, 'Versi Iklan');

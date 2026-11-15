@@ -38,6 +38,7 @@ export const dict = {
     'sound.on': 'Nyalakan musik kafe', 'sound.off': 'Matikan musik',
     'vol.label': 'Volume musik', 'vol.short': 'Volume musik',
     'greet.title': 'Selamat datang!', 'greet.msg': 'Mau ditemani musik kafe sambil lihat-lihat?', 'greet.yes': 'Boleh, nyalakan', 'greet.no': 'Nggak usah, makasih', 'greet.close': 'Tutup', 'greet.note': 'Mulainya pelan kok, volumenya bisa diatur di tombol musik.',
+    'greetBack.title': 'Selamat datang lagi!', 'greetBack.msgYes': 'Musik kafenya mau dinyalakan lagi?', 'greetBack.msgNo': 'Mau coba ditemani musik kafe kali ini?', 'greetBack.yes': 'Nyalakan musik', 'greetBack.no': 'Tanpa musik', 'greetBack.noteYes': 'Pilihan terakhirmu: dengan musik.', 'greetBack.noteNo': 'Pilihan terakhirmu: tanpa musik.',
     'upd.msg': 'Ada versi baru situs ini', 'upd.btn': 'Muat ulang', 'upd.later': 'Nanti', 'upd.auto': 'Otomatis dimuat ulang sebentar lagi',
   },
   en: {
@@ -77,6 +78,7 @@ export const dict = {
     'sound.on': 'Turn on cafe music', 'sound.off': 'Turn music off',
     'vol.label': 'Music volume', 'vol.short': 'Music volume',
     'greet.title': 'Welcome in!', 'greet.msg': 'Care for some cafe music while you look around?', 'greet.yes': 'Yes, please', 'greet.no': 'No, thanks', 'greet.close': 'Close', 'greet.note': 'It starts soft, and the music button has a volume control.',
+    'greetBack.title': 'Welcome back!', 'greetBack.msgYes': 'Shall I put the cafe music on again?', 'greetBack.msgNo': 'Care to try some cafe music this time?', 'greetBack.yes': 'Play the music', 'greetBack.no': 'No music', 'greetBack.noteYes': 'Your last choice: with music.', 'greetBack.noteNo': 'Your last choice: without music.',
     'upd.msg': 'A new version of this site is ready', 'upd.btn': 'Reload', 'upd.later': 'Later', 'upd.auto': 'Reloads by itself in a moment',
   },
 };

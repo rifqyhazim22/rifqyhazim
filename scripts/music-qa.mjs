@@ -53,7 +53,7 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) for (const scheme 
   ok('volume saved', (await p.evaluate(() => localStorage.getItem('rh-music-vol'))) === '0.6');
   // reload: no greeting, volume restored, music resumes on first click
   await p.reload(); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }); await p.waitForTimeout(3500);
-  ok('answered: greeting not shown again', !(await p.$('.waiter')));
+  ok('answered: nothing shown again this session (no welcome-back right after answering)', !(await p.$('.waiter')));
   ok('volume restored after reload', (await p.inputValue('.toggles [data-vol]')) === '60');
   await p.mouse.click(700, 500); await p.waitForTimeout(800);
   ok('returning "yes" visitor: music resumes on first click', (await p.getAttribute('#soundBtn', 'aria-pressed')) === 'true');
@@ -87,6 +87,34 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) for (const scheme 
   ok('phone: volume slider in the menu', await p.locator('.menu-vol [data-vol]').isVisible());
   await ctx.close();
 }
+{ // returning visitor: "welcome back" card once per session, previous choice highlighted + focused
+  for (const [dev, opts] of [['desk', desk], ['phone', phone]]) for (const [scheme, prev] of [['light', 'yes'], ['dark', 'no']]) {
+    const ctx = await b.newContext({ ...opts, colorScheme: scheme }); await ctx.addInitScript((v) => { if (!sessionStorage.getItem('qa-seeded')) { localStorage.setItem('rh-music', v); sessionStorage.setItem('qa-seeded', '1'); } }, prev);
+    const p = await ctx.newPage(); p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+    await p.goto(URL + '/'); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
+    const shown = await p.waitForSelector('.waiter.is-back', { timeout: 8000 }).then(() => true).catch(() => false);
+    await p.waitForTimeout(900);
+    await p.screenshot({ path: `${O}v2-welcome-back-${dev}-${scheme}.png` });
+    const info = shown ? await p.evaluate(() => ({ txt: document.querySelector('.waiter').innerText.replace(/\n+/g, ' | '), def: document.querySelector('.wt-actions .is-default').className, first: document.querySelector('.wt-actions .btn').className })) : {};
+    ok(`welcome back ${dev} ${scheme} (prev ${prev})`, shown && /Selamat datang lagi/.test(info.txt) && info.def.includes(prev === 'yes' ? 'wt-yes' : 'wt-no') && info.first.includes(prev === 'yes' ? 'wt-yes' : 'wt-no'), JSON.stringify(info));
+    if (dev === 'desk' && prev === 'yes') {
+      await p.mouse.click(700, 500); await p.waitForTimeout(600);
+      ok('welcome back: a click elsewhere does not start the music before the answer', (await p.getAttribute('#soundBtn', 'aria-pressed')) === 'false' && !!(await p.$('.waiter')));
+      await p.click('.wt-yes'); await p.waitForTimeout(1200);
+      ok('welcome back: "Nyalakan" starts the music', (await p.getAttribute('#soundBtn', 'aria-pressed')) === 'true');
+      await p.reload(); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }); await p.waitForTimeout(3500);
+      ok('welcome back: once per session', !(await p.$('.waiter')));
+    }
+    if (dev === 'desk' && prev === 'no') {
+      await p.click('.wt-no'); await p.waitForTimeout(500);
+      ok('welcome back: "Tanpa musik" keeps no', (await p.evaluate(() => localStorage.getItem('rh-music'))) === 'no' && (await p.getAttribute('#soundBtn', 'aria-pressed')) === 'false');
+      const p2 = await ctx.newPage(); await p2.goto(URL + '/en/'); await p2.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
+      const en = await p2.waitForSelector('.waiter.is-back', { timeout: 8000 }).then(() => p2.evaluate(() => document.querySelector('.wt-title').textContent)).catch(() => '');
+      ok('welcome back: new session (tab) greets again, English on /en/', en === 'Welcome back!', en);
+    }
+    await ctx.close();
+  }
+}
 { // reduced motion still greets (no animation)
   const { ctx, p } = await page({ ...desk, reducedMotion: 'reduce' });
   ok('reduced motion: greeting shows', await p.waitForSelector('.waiter', { timeout: 8000 }).then(() => true).catch(() => false));
@@ -94,4 +122,4 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) for (const scheme 
 }
 console.log(errs.length ? 'ERRORS\n' + errs.join('\n') : 'no console errors');
 console.log(`${res.filter(Boolean).length}/${res.length} passed`);
-await b.close();
+try { await b.close(); } catch {}
