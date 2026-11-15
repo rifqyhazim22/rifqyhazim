@@ -915,7 +915,8 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
   background:linear-gradient(to bottom, transparent 0, transparent calc(var(--win) - 130px), var(--veil) calc(var(--win) - 10px), var(--veil) 100%); }
 .s3d .band-paper[data-s3d] { --veil:color-mix(in srgb, var(--bg-alt) 94%, transparent); }
 .s3d .tools[data-s3d] { border-top:0; }
-.s3d #foto { --win:115vh; }
+.s3d #foto { --win:105vh; padding-bottom:40px !important; }
+.s3d #foto .sec-title { margin-bottom:0; }
 /* the plain photo is for no-3D visitors and screen readers; in 3D it is on the laptop screen */
 .s3d .photo-card { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; margin:0; }
 .photo-card { margin:0 auto; max-width:560px; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow); background:var(--surface); }
