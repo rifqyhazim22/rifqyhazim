@@ -33,9 +33,9 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
 
   const beamMat = (color) => new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
-    uniforms: { uColor: { value: new THREE.Color(color) }, uTime: { value: 0 }, uAmp: { value: 1 } },
+    uniforms: { uColor: { value: new THREE.Color(color) }, uTime: { value: 0 }, uAmp: { value: 1 }, uDay: { value: 0 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: 'uniform vec3 uColor; uniform float uTime; uniform float uAmp; varying vec2 vUv; void main(){ float a = pow(1.0 - vUv.y, 2.2) * 0.55 * uAmp; a *= 0.85 + 0.15 * sin(vUv.y * 40.0 - uTime * 3.0); gl_FragColor = vec4(uColor, a); }',
+    fragmentShader: 'uniform vec3 uColor; uniform float uTime; uniform float uAmp; uniform float uDay; varying vec2 vUv; void main(){ float a = pow(1.0 - vUv.y, 2.2) * mix(0.55, 0.32, uDay) * uAmp; a *= 0.85 + 0.15 * sin(vUv.y * 40.0 - uTime * 3.0); gl_FragColor = vec4(mix(uColor, uColor * 0.85, uDay), a); }',
   });
   const clipSolid = [], clipHolo = [];
   function stageChar(sprite, x, accent) {
@@ -59,10 +59,10 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     ped.add(base, ring, ring2, beam, scanRing, ch.g);
     ped.position.x = x;
     studio.add(ped);
-    return { ch, ped, plane, planeH, beam, scanRing, ring2 };
+    return { ch, ped, plane, planeH, beam, scanRing, ring2, base };
   }
-  const sAds = stageChar(ADS, -1.9, '#4CB8B0');
-  const sAgent = stageChar(AGENT, 1.9, '#C4B0E8');
+  const sAds = stageChar(ADS, -1.75, '#4CB8B0');
+  const sAgent = stageChar(AGENT, 1.75, '#C4B0E8');
   sAgent.ped.rotation.y = -0.18; sAds.ped.rotation.y = 0.18;
 
   // ================= CONTACT (at x = 104, past the end of the room) =================
@@ -112,7 +112,8 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
 
   // ================= camera stations =================
   const stations = {
-    studio: { from: { p: [0, 7.5, 16], l: [0, 0.4, 0] }, to: { p: [0, 2.6, 9.6], l: [0, 1.1, 0] } },
+    // ends a little wider than before so the two platforms sit in the middle third, clear of the side cards
+    studio: { from: { p: [0, 7.5, 16], l: [0, 0.4, 0] }, to: { p: [0, 2.9, 12.0], l: [0, 1.2, 0] } },
     contact: { p: [CX + 1.0, 3.8, 15.5], l: [CX + 0.2, 0.55, 0] },
   };
   let studioP = 0, visible = false, cta = false;
@@ -126,7 +127,19 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
   }
   addEventListener('resize', resize); resize();
 
+  // studio day/night: night = glowing teal grid on a dark stage (additive light beams); day = bright daylight stage,
+  // pale pedestals, soft teal grid and tinted (not additive) beams so they still read on a light backdrop
+  function studioTheme(dark) {
+    sHemi.color.set(dark ? '#bfeee9' : '#ffffff'); sHemi.groundColor.set(dark ? '#0b1f1e' : '#d6e6e2'); sHemi.intensity = dark ? 1.2 : 1.5;
+    sKey.color.set(dark ? '#ffffff' : '#fff6e8'); sKey.intensity = dark ? 1.4 : 1.7;
+    grid.material.color.set(dark ? '#4CB8B0' : '#0F6E6A'); grid.material.opacity = dark ? 0.16 : 0.1;
+    [sAds, sAgent].forEach((st) => {
+      st.base.material.color.set(dark ? '#16302E' : '#EDE8DF'); st.base.material.roughness = dark ? 0.5 : 0.7;
+      st.beam.material.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending; st.beam.material.uniforms.uDay.value = dark ? 0 : 1; st.beam.material.needsUpdate = true;
+    });
+  }
   function setTheme(dark) {
+    studioTheme(dark);
     const c = new THREE.Color(dark ? '#24201C' : '#F6F5F1');
     gsap.to(discMat.color, { r: c.r, g: c.g, b: c.b, duration: 0.6 });
     gsap.to(cHemi, { intensity: dark ? 0.6 : 1.6, duration: 0.6 });
@@ -147,10 +160,11 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
   let stops = [];
   function refresh() {
     const vh = innerHeight, list = [];
-    if (!lite && studioEl) list.push({ key: 'studio', top: docTop(studioEl), at: docTop(studioEl) + studioEl.offsetHeight - vh });
+    // the studio is a sticky stage: the camera rests on it for its whole scrubbed run (at -> end), stepping in from the previous corner
+    if (!lite && studioEl) { const top = docTop(studioEl); list.push({ key: 'studio', top, at: top, end: top + studioEl.offsetHeight - vh }); }
     Object.entries(sections).forEach(([key, el]) => { if (el && room.stations[key]) { const top = docTop(el); list.push({ key, top, at: top - vh * 0.1, win: parseFloat(getComputedStyle(el).paddingTop) || vh * 0.5 }); } });
     if (!lite && contactEl) { const top = docTop(contactEl); list.push({ key: 'contact', top, at: top + (contactEl.offsetHeight - vh) / 2 }); }
-    stops = list.sort((a, b) => a.at - b.at);
+    stops = list.map((x) => ({ end: x.at, ...x })).sort((a, b) => a.at - b.at);
   }
   refresh(); addEventListener('resize', () => requestAnimationFrame(refresh));
 
@@ -237,9 +251,9 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     // which two stops are we between?
     let ia = 0;
     while (ia < stops.length - 1 && s > stops[ia + 1].at) ia++;
-    const A = stops[ia], B = s > A.at && stops[ia + 1] ? stops[ia + 1] : null;
+    const A = stops[ia], B = s > A.end && stops[ia + 1] ? stops[ia + 1] : null;
     let t = 0;
-    if (B) { const a0 = A.at + vh * 0.25, b0 = B.at - vh * 0.35; t = b0 > a0 ? sm(a0, b0, s) : sm(A.at, B.at, s); }
+    if (B) { const a0 = A.end + vh * 0.25, b0 = B.at - vh * 0.35; t = b0 > a0 ? sm(a0, b0, s) : sm(A.end, B.at, s); }
     poseOf(A, s, pa); updateStop(A, s);
     if (B) { poseOf(B, s, pb); updateStop(B, s); }
     // neighbours keep their own scroll state too, so nothing pops when they come into view
