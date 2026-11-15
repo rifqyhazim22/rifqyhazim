@@ -147,6 +147,14 @@ waiter = initWaiter({ t, onLang, reduced, onYes: () => { startMusic(); tick(990)
 $('#spriteAds').innerHTML = spriteSVG(ADS, 'Versi Iklan');
 $('#spriteAgent').innerHTML = spriteSVG(AGENT, 'Versi Agen');
 $('#lampArt').innerHTML = LAMP_SVG;
+const fillCast = (el, data) => {
+  if (!el) return;
+  el.innerHTML = spriteSVG(data, '');
+  const svg = el.querySelector('svg');
+  if (svg) { svg.setAttribute('aria-hidden', 'true'); svg.removeAttribute('role'); svg.removeAttribute('aria-label'); }
+};
+fillCast($('#castSpriteAds'), ADS);
+fillCast($('#castSpriteAgent'), AGENT);
 
 const cursor = initCursor();
 const clocks = initClocks();
@@ -537,6 +545,39 @@ async function boot() {
         cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
       });
     });
+  } else {
+    // lite / no-world: the same card-to-character connectors, aimed at the 2D sprites
+    const cards = ['#hc1', '#hc2', '#hc3'].map((s) => $(s));
+    const cn = ['#cn1', '#cn2', '#cn3'].map((s) => $(s));
+    const adsEl = $('#castAds'), agentEl = $('#castAgent');
+    const hostEl = $('.stage-studio .stage-sticky');
+    const paintLiteConnectors = () => {
+      if (!adsEl || !agentEl || !hostEl) return;
+      const host = hostEl.getBoundingClientRect();
+      const ads = adsEl.getBoundingClientRect(), ag = agentEl.getBoundingClientRect();
+      if (ads.width < 2 || ag.width < 2 || host.width < 2) return;
+      const anchors = [
+        { x: ads.left + ads.width * 0.66, y: ads.top + ads.height * 0.44 },
+        { x: ag.left + ag.width * 0.46, y: ag.top + ag.height * 0.36 },
+        { x: ag.left + ag.width * 0.74, y: ag.top + ag.height * 0.64 },
+      ];
+      cards.forEach((c, i) => {
+        const r = c.getBoundingClientRect();
+        const visible = r.width > 0 && +getComputedStyle(c).opacity >= 0.4;
+        cn[i].classList.toggle('on', visible);
+        if (!visible) return;
+        const a = anchors[i];
+        const fromLeft = r.left + r.width / 2 < a.x;
+        const sx = (fromLeft ? r.right : r.left) - host.left;
+        const sy = r.top + Math.min(26, r.height * 0.22) - host.top;
+        const ex = a.x - host.left, ey = a.y - host.top;
+        cn[i].setAttribute('d', `M${sx},${sy} L${(sx + ex) / 2},${sy} L${ex},${ey}`);
+      });
+    };
+    paintLiteConnectors();
+    addEventListener('resize', paintLiteConnectors);
+    onLang(paintLiteConnectors);
+    gsap.ticker.add(paintLiteConnectors);
   }
 
   if (root.classList.contains('s3d')) {
