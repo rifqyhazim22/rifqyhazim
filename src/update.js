@@ -7,6 +7,7 @@
 //  - project sheet / menu open, or cafe music playing -> never reloads on its own, the toast just waits.
 // After the reload the visitor lands at the same scroll position, without the intro.
 /* global __BUILD_ID__ */
+import { dock } from './waiter.js';
 const CURRENT = typeof __BUILD_ID__ !== 'undefined' ? __BUILD_ID__ : 'dev';
 const KEY = 'rh-restore';
 const EVERY = 5 * 60 * 1000, IDLE = 45 * 1000;
@@ -62,8 +63,8 @@ export function initUpdates({ t, onLang, isBusy = () => false, isPlaying = () =>
     toast.innerHTML = '<span class="upd-dot" aria-hidden="true"></span><p><span class="upd-msg"></span><small></small></p><button type="button" class="upd-go"></button><button type="button" class="upd-x"></button>';
     toast.querySelector('.upd-go').addEventListener('click', reload);
     toast.querySelector('.upd-x').addEventListener('click', () => { toast.remove(); toast = null; }); // still reloads on leaving the tab
-    label(); document.body.append(toast);
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) toast.animate([{ opacity: 0, transform: 'translate(-50%, 24px)' }, { opacity: 1, transform: 'translate(-50%, 0)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    label(); dock().prepend(toast); // shares the bottom dock with the waiter greeting (stacks above it)
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) toast.animate([{ opacity: 0, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
   }
   onLang(label);
 

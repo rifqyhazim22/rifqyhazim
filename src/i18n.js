@@ -35,6 +35,8 @@ export const dict = {
     'kerja.scan': 'Memindai versi diri', back: 'Kembali', 'cta.next': 'Proyek berikutnya',
     'detail.ctx': 'Konteks', 'detail.did': 'Yang aku kerjain', 'detail.res': 'Hasil', 'detail.links': 'Tautan',
     'sound.on': 'Nyalakan musik kafe', 'sound.off': 'Matikan musik',
+    'vol.label': 'Volume musik', 'vol.short': 'Volume musik',
+    'greet.title': 'Selamat datang!', 'greet.msg': 'Mau ditemani musik kafe sambil lihat-lihat?', 'greet.yes': 'Boleh, nyalakan', 'greet.no': 'Nggak usah, makasih', 'greet.close': 'Tutup', 'greet.note': 'Mulainya pelan kok, volumenya bisa diatur di tombol musik.',
     'upd.msg': 'Ada versi baru situs ini', 'upd.btn': 'Muat ulang', 'upd.later': 'Nanti', 'upd.auto': 'Otomatis dimuat ulang sebentar lagi',
   },
   en: {
@@ -71,6 +73,8 @@ export const dict = {
     'kerja.scan': 'Scanning both versions', back: 'Back', 'cta.next': 'Next project',
     'detail.ctx': 'Context', 'detail.did': 'What I did', 'detail.res': 'Results', 'detail.links': 'Links',
     'sound.on': 'Turn on cafe music', 'sound.off': 'Turn music off',
+    'vol.label': 'Music volume', 'vol.short': 'Music volume',
+    'greet.title': 'Welcome in!', 'greet.msg': 'Care for some cafe music while you look around?', 'greet.yes': 'Yes, please', 'greet.no': 'No, thanks', 'greet.close': 'Close', 'greet.note': 'It starts soft, and the music button has a volume control.',
     'upd.msg': 'A new version of this site is ready', 'upd.btn': 'Reload', 'upd.later': 'Later', 'upd.auto': 'Reloads by itself in a moment',
   },
 };

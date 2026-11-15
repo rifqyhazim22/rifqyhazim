@@ -13,7 +13,8 @@ import Lenis from 'lenis';
 import { initLang, setLang, onLang, t, lang } from './i18n.js';
 import { initCursor } from './cursor.js';
 import { ADS, AGENT, spriteSVG, LAMP_SVG } from './sprites.js';
-import { setSound, isOn, tick, whoosh, setMusicMode, isMusicPlaying } from './sound.js';
+import { setSound, isOn, tick, whoosh, setMusicMode, isMusicPlaying, getVolume, setVolume, isRunning } from './sound.js';
+import { initWaiter, musicChoice, saveMusicChoice } from './waiter.js';
 import { initUpdates, takeRestore } from './update.js';
 import { initClocks } from './clock.js';
 import { initContent, fillProject, project } from './render-content.js';
@@ -88,12 +89,51 @@ function syncSoundBtns() {
   const v = isOn();
   soundBtns.forEach((b) => { b.setAttribute('aria-pressed', String(v)); b.dataset.i18nAria = v ? 'sound.off' : 'sound.on'; b.setAttribute('aria-label', t(b.dataset.i18nAria)); b.title = t(b.dataset.i18nAria); });
 }
-soundBtns.forEach((b) => b.addEventListener('click', () => { const v = !isOn(); setSound(v); syncSoundBtns(); tick(v ? 990 : 440); }));
+let waiter = null; // first-visit greeting (set up below)
+function startMusic() { setSound(true); syncSoundBtns(); }
+soundBtns.forEach((b) => b.addEventListener('click', () => {
+  if (b.dataset.lp === '1') { b.dataset.lp = ''; return; } // that press was a long-press that opened the volume
+  const v = !isOn(); setSound(v); syncSoundBtns(); tick(v ? 990 : 440);
+  saveMusicChoice(v ? 'yes' : 'no'); waiter?.dismiss(); // the button counts as an answer too
+}));
 onLang(syncSoundBtns);
+// Volume: header popover on hover/focus (desktop), long-press on the phone button, and a slider in the mobile menu.
+const volInputs = $$('[data-vol]');
+function syncVol() {
+  const v = Math.round(getVolume() * 100);
+  volInputs.forEach((i) => { if (+i.value !== v) i.value = v; i.style.setProperty('--vol', v + '%'); i.setAttribute('aria-valuetext', v + '%'); });
+  $$('.vol-val').forEach((e) => { e.textContent = v; });
+}
+volInputs.forEach((i) => i.addEventListener('input', () => { setVolume(i.value / 100); syncVol(); }));
+syncVol();
+$$('.sound-wrap').forEach((w) => {
+  const btn = $('[data-sound-btn]', w);
+  let lp = 0;
+  const closeOut = (e) => { if (!w.contains(e.target)) { w.classList.remove('open'); removeEventListener('pointerdown', closeOut, true); } };
+  btn.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    lp = setTimeout(() => { btn.dataset.lp = '1'; w.classList.add('open'); try { navigator.vibrate?.(10); } catch { /* n/a */ } addEventListener('pointerdown', closeOut, true); }, 450);
+  }, { passive: true });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => btn.addEventListener(ev, () => clearTimeout(lp)));
+  btn.addEventListener('contextmenu', (e) => { if (btn.dataset.lp === '1') e.preventDefault(); });
+  w.addEventListener('keydown', (e) => { if (e.key === 'Escape') { w.classList.remove('open'); btn.focus(); } });
+});
+// Returning visitor who said yes: the music comes back on their first click/tap/key (browsers need that gesture).
+if (musicChoice() === 'yes') {
+  const evs = ['click', 'keydown', 'touchend'];
+  const go = (e) => {
+    if (isOn()) { evs.forEach((n) => removeEventListener(n, go, true)); return; }
+    if (e.target.closest?.('[data-sound-btn], .vol-pop, .waiter')) return; // those controls decide for themselves
+    startMusic();
+    setTimeout(() => { if (isRunning()) evs.forEach((n) => removeEventListener(n, go, true)); else { setSound(false); syncSoundBtns(); } }, 400);
+  };
+  evs.forEach((n) => addEventListener(n, go, true));
+}
 
 // ---------- Auto-update: a new deploy is picked up without a manual refresh (see update.js)
 const restore = takeRestore();
 initUpdates({ t, onLang, isBusy: () => !!openKey || menuOpen || wiping, isPlaying: isMusicPlaying });
+waiter = initWaiter({ t, onLang, reduced, onYes: () => { startMusic(); tick(990); }, isBlocked: () => !!openKey || menuOpen || wiping });
 
 // ---------- 2D fallback art
 $('#spriteAds').innerHTML = spriteSVG(ADS, 'Versi Iklan');
@@ -509,7 +549,7 @@ async function boot() {
   const m = location.hash.match(/^#proyek\/([abc])$/);
 
   await document.fonts.ready;
-  if (reduced) { pre.remove(); clocks.reveal(); if (m) openDetail(m[1], false); if (want3D) schedule3D(); if (restore) jump(restore.y); return; }
+  if (reduced) { pre.remove(); clocks.reveal(); if (m) openDetail(m[1], false); if (want3D) schedule3D(); if (restore) jump(restore.y); else waiter.schedule(1500); return; }
 
   // 01 Intro: the <Rifqy•Hazim> wordmark ripples in with a 000-100 counter, then the sheet lifts (rounded bottom).
   // (2D on purpose: the 3D wordmark pulled Three.js onto the critical path.)
@@ -529,7 +569,7 @@ async function boot() {
     .fromTo('.avail, .positioning, .lead, .version-chips, .time-card', { y: 24, clipPath: 'inset(-30% -30% 100% -30%)' }, { y: 0, clipPath: 'inset(-30% -30% -30% -30%)', duration: 0.7, ease: 'power3.out', stagger: 0.08, clearProps: 'clipPath' }, '<0.2')
     .fromTo('.scene2d', { y: 16, clipPath: 'inset(0% 0% 100% 0%)' }, { y: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power3.out', clearProps: 'transform,clipPath' }, '<')
     .add(() => decode($('.positioning'), 1.0), '<0.1')
-    .add(() => { if (m) openDetail(m[1], false); });
+    .add(() => { if (m) openDetail(m[1], false); if (!restore) waiter.schedule(1700); });
 
   gsap.to('.hero-copy', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   // holo cards are driven by the studio stage when the world layout is on; otherwise they reveal like any card

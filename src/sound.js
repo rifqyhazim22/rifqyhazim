@@ -8,7 +8,19 @@ let mode = 'day', cur = null; // cur = { src, gain, mode }
 const TRACKS = { day: '/audio/cafe-day.mp3', night: '/audio/cafe-night.mp3' };
 const buffers = {};
 const listeners = new Set();
-const PAD_LEVEL = 0.05, MUSIC_LEVEL = 0.6;
+const PAD_LEVEL = 0.05, MUSIC_LEVEL = 1;
+// Listening volume (0..1): starts soft (0.35) so nobody gets startled, fades in over ~2 s, remembered per browser.
+const VOL_KEY = 'rh-music-vol', DEFAULT_VOL = 0.35;
+let volume = (() => { try { const v = parseFloat(localStorage.getItem(VOL_KEY)); return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : DEFAULT_VOL; } catch { return DEFAULT_VOL; } })();
+export function getVolume() { return volume; }
+export function setVolume(v, save = true) {
+  volume = Math.min(1, Math.max(0, +v || 0));
+  if (save) { try { localStorage.setItem(VOL_KEY, String(Math.round(volume * 100) / 100)); } catch { /* private mode */ } }
+  if (ctx && on && !document.hidden) ramp(master.gain, volume, 0.12);
+  emit();
+}
+/** true once the audio context is actually running (a browser may refuse to start it without a click) */
+export function isRunning() { return !!ctx && ctx.state === 'running'; }
 
 function ensure() {
   if (ctx) return;
@@ -52,7 +64,7 @@ async function play(m, fade) {
   const other = m === 'day' ? 'night' : 'day';
   setTimeout(() => (window.requestIdleCallback || setTimeout)(() => load(other).catch(() => {})), 4000);
 }
-function emit() { listeners.forEach((f) => f({ on, mode, playing: !!cur })); }
+function emit() { listeners.forEach((f) => f({ on, mode, playing: !!cur, volume })); }
 export function onSoundChange(f) { listeners.add(f); }
 
 export function isOn() { return on; }
@@ -60,7 +72,7 @@ export function isMusicPlaying() { return on && !!cur; }
 export function setSound(v) {
   on = v;
   if (v) {
-    ensure(); ctx.resume(); ramp(master.gain, 0.9, 0.6);
+    ensure(); ctx.resume(); ramp(master.gain, volume, 2); // from silence (master sits at 0 while off)
     play(mode, 1.6);
   } else if (ctx) {
     ramp(master.gain, 0, 0.5); stopCur(0.5); setPadLevel(0, 0.3);
@@ -77,13 +89,13 @@ export function setMusicMode(m) {
 document.addEventListener('visibilitychange', () => {
   if (!ctx || !on) return;
   if (document.hidden) { ramp(master.gain, 0, 0.3); setTimeout(() => { if (document.hidden) ctx.suspend(); }, 350); }
-  else { ctx.resume(); ramp(master.gain, 0.9, 0.8); }
+  else { ctx.resume(); ramp(master.gain, volume, 0.8); }
 });
 
 export function tick(freq = 880) {
   if (!on || !ctx) return;
   const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = freq;
-  g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+  g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
   o.connect(g); g.connect(master); o.start(); o.stop(ctx.currentTime + 0.14);
 }
 export function whoosh(up = true) {
@@ -93,6 +105,6 @@ export function whoosh(up = true) {
   const src = ctx.createBufferSource(); src.buffer = buf;
   const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
   bp.frequency.setValueAtTime(up ? 300 : 2200, ctx.currentTime); bp.frequency.exponentialRampToValueAtTime(up ? 2200 : 300, ctx.currentTime + len);
-  const g = ctx.createGain(); g.gain.value = 0.18;
+  const g = ctx.createGain(); g.gain.value = 0.36;
   src.connect(bp); bp.connect(g); g.connect(master); src.start();
 }
