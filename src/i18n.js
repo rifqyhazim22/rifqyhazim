@@ -3,7 +3,7 @@ import { KEYWORD_COPY, PROPOSALS } from './keyword-copy.js';
 export const dict = {
   id: {
     skip: 'Lompat ke konten',
-    'nav.now': 'sekarang', 'nav.work': 'kerja', 'nav.projects': 'proyek', 'nav.ask': 'tanya', 'nav.journey': 'jejak', 'nav.talk': 'ngobrol',
+    'nav.home': 'beranda', 'nav.me': 'aku', 'nav.now': 'sekarang', 'nav.work': 'kerja', 'nav.projects': 'proyek', 'nav.ask': 'tanya', 'nav.journey': 'jejak', 'nav.talk': 'ngobrol',
     'theme.auto': 'Tema: Auto (ikut sistem)', 'theme.light': 'Tema: Terang', 'theme.dark': 'Tema: Gelap', 'theme.label': 'Tema tampilan', 'theme.auto.s': 'Auto', 'theme.light.s': 'Terang', 'theme.dark.s': 'Gelap', 'lang.label': 'Bahasa',
     avail: 'Open buat kolaborasi',
     'title.a': 'Iklan', 'title.b': '& Agen',
@@ -43,7 +43,7 @@ export const dict = {
   },
   en: {
     skip: 'Skip to content',
-    'nav.now': 'now', 'nav.work': 'work', 'nav.projects': 'projects', 'nav.ask': 'ask', 'nav.journey': 'journey', 'nav.talk': 'talk',
+    'nav.home': 'home', 'nav.me': 'me', 'nav.now': 'now', 'nav.work': 'work', 'nav.projects': 'projects', 'nav.ask': 'ask', 'nav.journey': 'journey', 'nav.talk': 'talk',
     'theme.auto': 'Theme: Auto (follows system)', 'theme.light': 'Theme: Light', 'theme.dark': 'Theme: Dark', 'theme.label': 'Display theme', 'theme.auto.s': 'Auto', 'theme.light.s': 'Light', 'theme.dark.s': 'Dark', 'lang.label': 'Language',
     avail: 'Open for collabs',
     'title.a': 'Ads', 'title.b': '& Agents',

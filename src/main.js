@@ -50,6 +50,13 @@ function applyTheme(mode, instant) {
   setMusicMode(mode === 'dark' ? 'night' : 'day'); // cafe music follows the theme (day loop / night loop)
   scene?.setTheme(mode === 'dark', instant);
   world?.setTheme(mode === 'dark');
+  syncStage();
+}
+// studio stage (kerja): night = dark neon stage (dark header + light cursor over it); day = bright, the header stays as is
+var stageActive = false; // (var: applyTheme may run before this line)
+function syncStage() {
+  const night = stageActive && root.dataset.theme === 'dark';
+  document.querySelector('.site-header')?.classList.toggle('on-stage', night); root.classList.toggle('cursor-light', night);
 }
 // 3-state theme: Auto (default, follows prefers-color-scheme live) / Light / Dark.
 // A manual pick lasts only for this page session (no storage); a reload is back on Auto.
@@ -177,35 +184,41 @@ function resetPick() {
 const header = $('.site-header');
 const nav = $('.nav');
 const links = $$('.nav a');
-const pill = document.createElement('span'); pill.className = 'nav-pill'; nav.prepend(pill);
+const pill = document.createElement('span'); pill.className = 'nav-pill is-off'; nav.prepend(pill);
 function movePill() {
-  const a = links.find((l) => l.getAttribute('aria-current') === 'true') || links[0];
+  const a = links.find((l) => l.getAttribute('aria-current') === 'true');
+  if (!a) { pill.classList.add('is-off'); return; } // on the hero (beranda): no section is highlighted yet
+  const wasOff = pill.classList.contains('is-off');
+  if (wasOff) pill.style.transition = 'opacity .35s, scale .35s'; // appear in place instead of sliding in from the left
   pill.style.width = a.offsetWidth + 'px';
   pill.style.transform = `translateX(${a.offsetLeft}px)`;
+  if (wasOff) { void pill.offsetWidth; pill.classList.remove('is-off'); requestAnimationFrame(() => { pill.style.transition = ''; }); }
 }
-const sectionIds = ['sekarang', 'kerja', 'proyek', 'tanya', 'jejak', 'ngobrol'];
+const sectionIds = ['foto', 'sekarang', 'kerja', 'proyek', 'tanya', 'jejak', 'ngobrol'];
 function setActive(id) {
-  if (header.dataset.active === id) return;
-  header.dataset.active = id;
+  if ((header.dataset.active || '') === (id || '')) return;
+  header.dataset.active = id || '';
   links.forEach((a) => (a.getAttribute('href') === '#' + id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
   movePill();
 }
 sectionIds.forEach((id) => {
   ScrollTrigger.create({ trigger: '#' + id, start: 'top 45%', end: 'bottom 45%', onToggle: (st) => st.isActive && setActive(id) });
 });
-setActive('sekarang'); onLang(() => requestAnimationFrame(movePill)); addEventListener('resize', movePill);
+// the hero is "beranda" (home), not a nav section: while it fills the view the nav shows no pill
+ScrollTrigger.create({ trigger: '#beranda', start: 'top top', end: 'bottom 45%', onToggle: (st) => st.isActive && setActive(null) });
+header.dataset.active = 'x'; setActive(null); onLang(() => requestAnimationFrame(movePill)); addEventListener('resize', movePill);
 document.fonts.ready.then(movePill);
 
 // ---------- Full-screen wipe between sections (0.5s, cubic-bezier(.6,0,.25,1))
 const wipe = $('#wipe'), wipeSheet = $('.wipe-sheet'), wipeNum = $('#wipeNum'), wipeTitle = $('#wipeTitle');
 const wipeColors = {
-  sekarang: ['#0F6E6A', '#FFFFFF'], kerja: ['#1E3A38', '#F0EBE3'], proyek: ['#F0D36A', '#1A1916'],
+  beranda: ['#0F6E6A', '#FFFFFF'], foto: ['#F0EBE3', '#1A1916'], sekarang: ['#0F6E6A', '#FFFFFF'], kerja: ['#1E3A38', '#F0EBE3'], proyek: ['#F0D36A', '#1A1916'],
   tanya: ['#A888D4', '#1A1916'], jejak: ['#5EC4A8', '#1A1916'], ngobrol: ['#E87862', '#1A1916'],
 };
-const navKey = { sekarang: 'nav.now', kerja: 'nav.work', proyek: 'nav.projects', tanya: 'nav.ask', jejak: 'nav.journey', ngobrol: 'nav.talk' };
+const navKey = { beranda: 'nav.home', foto: 'nav.me', sekarang: 'nav.now', kerja: 'nav.work', proyek: 'nav.projects', tanya: 'nav.ask', jejak: 'nav.journey', ngobrol: 'nav.talk' };
 function targetY(id) {
   const el = document.getElementById(id);
-  if (id === 'sekarang') return 0;
+  if (id === 'beranda') return 0;
   // layout position: ignore a section's own entrance offset (it is translated down until it has come in)
   const top = el.getBoundingClientRect().top + scrollY - (Number(gsap.getProperty(el, 'y')) || 0);
   if (id === 'kerja' && root.classList.contains('has-world')) return top + (el.offsetHeight - innerHeight) * 0.62; // land mid-scan, cards visible
@@ -221,9 +234,9 @@ function wipeTo(id, covered) {
   if (!document.getElementById(id)) return;
   if (reduced) { covered?.(); jump(targetY(id)); return; }
   if (wiping) return; wiping = true;
-  const [bg, ink] = wipeColors[id] || wipeColors.sekarang;
+  const [bg, ink] = wipeColors[id] || wipeColors.beranda;
   wipeSheet.style.setProperty('--wipe', bg); wipeSheet.style.setProperty('--wipe-ink', ink);
-  wipeNum.textContent = `${String(sectionIds.indexOf(id) + 1).padStart(2, '0')} / 06`;
+  wipeNum.textContent = `${String(sectionIds.indexOf(id) + 1).padStart(2, '0')} / ${String(sectionIds.length).padStart(2, '0')}`;
   wipeTitle.textContent = t(navKey[id]);
   wipe.classList.add('run'); whoosh(true); world?.hold('wipe', true); // the sheet is coming over the page: no 3D frames until the jump
   gsap.timeline({ onComplete: () => { wipe.classList.remove('run'); wiping = false; world?.hold('wipe', false); } })
@@ -495,16 +508,16 @@ async function boot() {
     ScrollTrigger.create({
       trigger: '#kerja', start: 'top top', end: 'bottom bottom', scrub: true,
       onUpdate: (st) => { studioP = st.progress; world?.setStudio(studioP); },
-      onToggle: (st) => { header.classList.toggle('on-stage', st.isActive); root.classList.toggle('cursor-light', st.isActive); },
+      onToggle: (st) => { stageActive = st.isActive; syncStage(); },
     });
-    worldEl.dataset.zone = 'studio';
+    worldEl.dataset.zone = $('#foto[data-s3d]') ? 'room' : 'studio'; // the first 3D window after the hero is the photo corner
     const btnSend = $('.contact .btn-primary');
     btnSend.addEventListener('pointerenter', () => world?.setCTA(true)); btnSend.addEventListener('pointerleave', () => world?.setCTA(false));
     btnSend.addEventListener('focus', () => world?.setCTA(true)); btnSend.addEventListener('blur', () => world?.setCTA(false));
     const thresholds = [0.3, 0.48, 0.66];
     gsap.ticker.add(() => {
       if (!root.classList.contains('has-world')) return;
-      if (!header.classList.contains('on-stage') && studioP <= 0) return;
+      if (!stageActive && studioP <= 0) return;
       const scan = Math.round(THREE_clamp((studioP - 0.15) / 0.65) * 100);
       num.textContent = String(scan).padStart(3, '0');
       const an = worldReady ? world.anchors() : null;
@@ -533,14 +546,6 @@ async function boot() {
     const worldEl = $('#world'), zone = (z) => { worldEl.dataset.zone = z; };
     const zones = [...(root.classList.contains('has-world') ? [['#kerja', 'studio']] : []), ...$$('[data-s3d]').map((el) => [el, 'room']), ...(root.classList.contains('has-world') ? [['#ngobrol', 'contact']] : [])];
     zones.forEach(([el, z]) => ScrollTrigger.create({ trigger: el, start: 'top 55%', end: 'bottom 55%', onToggle: (st) => st.isActive && zone(z) }));
-    // the timeline dissolves before the photo corner: its text and its veil fade out (scrubbed, so scrolling up brings
-    // them back) while the photo window comes up from the bottom; the laptop zoom only starts once it is clear
-    if ($('#jejak') && $('#foto')) {
-      // text first (foto top 96% -> 82% of the screen), then the veil (88% -> 72%), so no text ever sits on the 3D
-      const jr = $('#jejak'), tl = gsap.timeline({ scrollTrigger: { trigger: '#foto', start: 'top 96%', end: 'top 72%', scrub: true } });
-      tl.fromTo($('#jejak .wrap'), { autoAlpha: 1 }, { autoAlpha: 0, ease: 'none', duration: 14, immediateRender: false }, 0)
-        .fromTo(jr, { '--veilA': 1 }, { '--veilA': 0, ease: 'none', duration: 16, immediateRender: false }, 8);
-    }
   }
 
   chips.forEach((c) => {
@@ -629,8 +634,8 @@ async function boot() {
   // move backwards, so it comes in again on the way down. Children keep their own [data-reveal] timing on top.
   // The studio stage is sticky in the world layout, so it never gets a transform: only its heading eases in.
   const withWorld = root.classList.contains('has-world');
-  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#foto', '#ngobrol', '.site-footer'];
-  if (!withWorld) secs.splice(1, 0, '#kerja');
+  const secs = ['#foto', '.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
+  if (!withWorld) secs.splice(2, 0, '#kerja');
   secs.map((s) => $(s)).filter(Boolean).forEach((sec) => {
     const clip = !small; // phones: transform + opacity only (no clip-path repaint of big boxes)
     gsap.fromTo(sec,

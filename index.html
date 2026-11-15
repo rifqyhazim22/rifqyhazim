@@ -40,9 +40,10 @@
 
   <header class="site-header">
     <div class="wrap header-inner">
-      <a href="#sekarang" class="wordmark" aria-label="Rifqy Hazim"><span class="wm-name"><i class="wm-br" aria-hidden="true">&lt;</i>Rifqy<i class="wm-dot" aria-hidden="true">•</i>Hazim<i class="wm-br" aria-hidden="true">&gt;</i></span><span class="wm-sub mono" aria-hidden="true"><i class="wm-br">&lt;</i>H<i class="wm-dot">•</i>R<i class="wm-br">&gt;</i></span></a>
+      <a href="#beranda" class="wordmark" aria-label="Rifqy Hazim"><span class="wm-name"><i class="wm-br" aria-hidden="true">&lt;</i>Rifqy<i class="wm-dot" aria-hidden="true">•</i>Hazim<i class="wm-br" aria-hidden="true">&gt;</i></span><span class="wm-sub mono" aria-hidden="true"><i class="wm-br">&lt;</i>H<i class="wm-dot">•</i>R<i class="wm-br">&gt;</i></span></a>
       <span class="hdr-clock" data-clock="hdr" title="Jam lokal"></span>
       <nav class="nav" aria-label="Utama">
+        <a href="#foto" data-i18n="nav.me">aku</a>
         <a href="#sekarang" data-i18n="nav.now">sekarang</a>
         <a href="#kerja" data-i18n="nav.work">kerja</a>
         <a href="#proyek" data-i18n="nav.projects">proyek</a>
@@ -75,7 +76,7 @@
   <main id="konten">
     <div class="sheet sheet-hero">
     <!-- 01 HERO -->
-    <section class="hero" id="sekarang">
+    <section class="hero" id="beranda">
       <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
       <div class="bubble mono" id="bubble" aria-hidden="true"><span data-i18n="bubble.ads">Lagi urus iklan</span></div>
       <div class="wrap hero-split">
@@ -118,9 +119,23 @@
       </div>
       <p class="scene-hint mono"><span class="mouse" aria-hidden="true"></span><span data-i18n="scene.hint">geser kursor ke karakter · scroll buat masuk</span></p>
     </section>
+    </div><!-- /sheet-hero -->
+
+
+    <!-- 02 FOTO (intro, right after the hero desk): in 3D the photo sits on a laptop screen the camera zooms into; the figure is the plain version -->
+    <section class="band band-paper band-photo" id="foto" data-s3d="foto" aria-labelledby="photoTitle">
+      <div class="wrap">
+        <div class="sec-title"><span class="rule"></span><h2 id="photoTitle" data-i18n="photo.title">Ini aku</h2><span class="rule"></span></div>
+        <p class="photo-intro" data-reveal><span class="photo-name serif">Rifqy Hazim</span><span class="photo-role mono">Ads &amp; E-commerce Specialist · AI Agent Orchestrator</span><span class="photo-loc mono" data-i18n="talk.loc">Berbasis di Jakarta, Indonesia</span></p>
+        <figure class="photo-card" data-reveal>
+          <picture><source srcset="/img/rifqy-desk.webp" type="image/webp"><img src="/img/rifqy-desk.jpg" width="886" height="790" loading="lazy" decoding="async" data-i18n-alt="photo.alt" alt="Rifqy Hazim di meja kerja dengan laptop"></picture>
+        </figure>
+      </div>
+    </section>
 
     <!-- NOW STRIP -->
-    <section class="now wrap" aria-labelledby="nowTitle">
+    <div class="sheet sheet-now">
+    <section class="now wrap" id="sekarang" aria-labelledby="nowTitle">
       <div class="sec-title"><span class="rule"></span><h2 id="nowTitle" data-i18n="now.title">Lagi ngerjain apa</h2><span class="rule"></span></div>
       <p class="eyebrow mono" data-i18n="now.eyebrow" data-reveal>Lagi dikerjain</p>
       <p class="now-quote" data-reveal><span data-i18n="now.s1"></span> <span class="now-s2" data-i18n="now.s2" data-flag="freelanceLine"></span></p>
@@ -131,8 +146,7 @@
       </ul>
       <p class="updated" data-i18n="now.updated" data-reveal>Diperbarui Nov 2026</p>
     </section>
-
-    </div><!-- /sheet-hero -->
+    </div><!-- /sheet-now -->
 
     <!-- KERJA: Studio Versi stage (sticky, scrubbed) -->
     <section class="stage stage-studio" id="kerja" aria-labelledby="workTitle">
@@ -222,16 +236,6 @@
       </div>
     </section>
 
-    <!-- FOTO: in 3D the photo sits on a laptop screen the camera zooms into; the figure is the plain version -->
-    <section class="band band-paper band-photo" id="foto" data-s3d="foto" aria-labelledby="photoTitle">
-      <div class="wrap">
-        <div class="sec-title"><span class="rule"></span><h2 id="photoTitle" data-i18n="photo.title">Ini aku</h2><span class="rule"></span></div>
-        <figure class="photo-card" data-reveal>
-          <picture><source srcset="/img/rifqy-desk.webp" type="image/webp"><img src="/img/rifqy-desk.jpg" width="886" height="790" loading="lazy" decoding="async" data-i18n-alt="photo.alt" alt="Rifqy Hazim di meja kerja dengan laptop"></picture>
-        </figure>
-      </div>
-    </section>
-
     </div><!-- /sheet-content -->
 
     <!-- NGOBROL: contact vignette over the 3D world -->
@@ -263,7 +267,7 @@
       <span class="wordmark" role="img" aria-label="Rifqy Hazim"><span class="wm-name"><i class="wm-br" aria-hidden="true">&lt;</i>Rifqy<i class="wm-dot" aria-hidden="true">•</i>Hazim<i class="wm-br" aria-hidden="true">&gt;</i></span><span class="wm-sub mono" aria-hidden="true"><i class="wm-br">&lt;</i>H<i class="wm-dot">•</i>R<i class="wm-br">&gt;</i></span></span>
       <a class="mono muted ft-mail" href="mailto:rifqyhazim22@gmail.com">rifqyhazim22@gmail.com</a>
       <span class="ft-date mono" data-wib-date></span>
-      <a href="#sekarang" class="btn btn-small">↑ <span data-i18n="top">Ke atas</span></a>
+      <a href="#beranda" class="btn btn-small">↑ <span data-i18n="top">Ke atas</span></a>
     </div>
   </footer>
 
@@ -271,12 +275,13 @@
   <div class="menu" id="menu" role="dialog" aria-modal="true" data-i18n-aria="menu.label" aria-label="Menu" hidden>
     <div class="menu-sheet">
       <nav class="menu-nav" aria-label="Menu">
-        <a href="#sekarang"><span class="mono">01</span><span data-i18n="nav.now">sekarang</span></a>
-        <a href="#kerja"><span class="mono">02</span><span data-i18n="nav.work">kerja</span></a>
-        <a href="#proyek"><span class="mono">03</span><span data-i18n="nav.projects">proyek</span></a>
-        <a href="#tanya"><span class="mono">04</span><span data-i18n="nav.ask">tanya</span></a>
-        <a href="#jejak"><span class="mono">05</span><span data-i18n="nav.journey">jejak</span></a>
-        <a href="#ngobrol"><span class="mono">06</span><span data-i18n="nav.talk">ngobrol</span></a>
+        <a href="#foto"><span class="mono">01</span><span data-i18n="nav.me">aku</span></a>
+        <a href="#sekarang"><span class="mono">02</span><span data-i18n="nav.now">sekarang</span></a>
+        <a href="#kerja"><span class="mono">03</span><span data-i18n="nav.work">kerja</span></a>
+        <a href="#proyek"><span class="mono">04</span><span data-i18n="nav.projects">proyek</span></a>
+        <a href="#tanya"><span class="mono">05</span><span data-i18n="nav.ask">tanya</span></a>
+        <a href="#jejak"><span class="mono">06</span><span data-i18n="nav.journey">jejak</span></a>
+        <a href="#ngobrol"><span class="mono">07</span><span data-i18n="nav.talk">ngobrol</span></a>
       </nav>
       <div class="menu-foot">
         <div class="time-card time-card-sm"><span class="tc-clock" data-clock="menu"></span><div class="tc-text"><p class="tc-date mono" data-wib-date></p><p class="tc-zone mono"><span data-wib-zone></span> · <span data-wib-time></span></p><p class="tc-jkt mono" data-wib-jkt hidden></p></div></div>
@@ -291,7 +296,7 @@
   </div>
   <div class="tap-layer" id="tapLayer" aria-hidden="true"></div>
 
-  <div class="wipe" id="wipe" aria-hidden="true"><div class="wipe-sheet"><span class="wipe-num mono" id="wipeNum">01 / 06</span><span class="wipe-title serif" id="wipeTitle">sekarang</span></div></div>
+  <div class="wipe" id="wipe" aria-hidden="true"><div class="wipe-sheet"><span class="wipe-num mono" id="wipeNum">01 / 07</span><span class="wipe-title serif" id="wipeTitle">sekarang</span></div></div>
 
   <!-- Project detail (full-screen sheet) -->
   <div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="dTitle" hidden>
