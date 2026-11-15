@@ -44,8 +44,10 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) {
     // determinism: pose at a mid point reached going down equals the pose there coming back up
     const mid = ms.find((m) => m[0] === 'tanya')[1] + 200;
     const pose = () => p.evaluate(() => { const c = window.__world.cam(); return c.map((v) => Math.round(v * 1000) / 1000).join(','); });
-    await to(p, mid - 1500); await settle(p); await to(p, mid); await settle(p, 2600); const down = await pose();
-    await to(p, mid + 2500); await settle(p); await to(p, mid); await settle(p, 2600); const up = await pose();
+    // a slow software renderer can lag the scrub by seconds: wait until the camera stops moving (max 20 s)
+    const steady = async () => { let a = await pose(); for (let i = 0; i < 40; i++) { await p.waitForTimeout(500); const c = await pose(); if (c === a) return c; a = c; } return a; };
+    await to(p, mid - 1500); await settle(p); await to(p, mid); await settle(p, 2600); const down = await steady();
+    await to(p, mid + 2500); await settle(p); await to(p, mid); await settle(p, 2600); const up = await steady();
     const dmax = Math.max(...down.split(',').map((v, i) => Math.abs(v - up.split(',')[i]))); // scrub/pointer easing tails: allow 1 cm
     ok(`${dev}-${scheme}: same pose down vs up`, dmax < 0.01, `${down} | ${up}`);
     if (scheme === 'light') ok(`${dev}: dpr`, info && info.dpr >= (dev === 'desk' ? 1 : 1.5), JSON.stringify(info?.dpr));
