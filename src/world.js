@@ -295,7 +295,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
 
   // visibility: render only while a part of the page that shows the world is on screen
   const vis = new Map();
-  const io = new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.isIntersecting)); visible = [...vis.values()].some(Boolean); }, { threshold: 0, rootMargin: '25% 0px' }); // start a little early so a window never opens on an empty frame
+  const io = new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.isIntersecting)); visible = [...vis.values()].some(Boolean); }, { threshold: 0, rootMargin: '0px 0px 48px 0px' }); // start a moment early so a window never opens on an empty frame (but stay idle behind the hero)
   [studioEl, contactEl, ...Object.values(sections)].filter(Boolean).forEach((el) => io.observe(el));
 
   return {
