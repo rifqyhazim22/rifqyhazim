@@ -915,6 +915,8 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
   background:linear-gradient(to bottom, transparent 0, transparent calc(var(--win) - 130px), var(--veil) calc(var(--win) - 10px), var(--veil) 100%); }
 .s3d .band-paper[data-s3d] { --veil:color-mix(in srgb, var(--bg-alt) 94%, transparent); }
 .s3d .tools[data-s3d] { border-top:0; }
+/* jejak's veil can fade out (main.js scrubs --veilA 1 -> 0) so the photo corner is clear behind it */
+.s3d #jejak[data-s3d] { --veilA:1; --veil:color-mix(in srgb, var(--bg) calc(var(--veilA) * 94%), transparent); }
 .s3d #foto { --win:105vh; padding-bottom:40px !important; }
 .s3d #foto .sec-title { margin-bottom:0; }
 /* the plain photo is for no-3D visitors and screen readers; in 3D it is on the laptop screen */

@@ -28,7 +28,7 @@ async function marks(p) {
     const m = [];
     const k = document.querySelector('#kerja'); if (document.documentElement.classList.contains('has-world')) m.push(['kerja', top(k) + k.offsetHeight * 0.55 - vh]);
     document.querySelectorAll('[data-s3d]').forEach((el) => { m.push([el.dataset.s3d, Math.max(0, top(el) - vh * 0.1)]); });
-    const f = document.querySelector('#foto'); m.push(['foto-wide', top(f) - vh * 0.75], ['foto-zoom', top(f) + vh * 0.12]);
+    const f = document.querySelector('#foto'); m.push(['foto-wide', top(f) - vh * 0.7], ['foto-zoom', top(f) + vh * 0.12]);
     if (document.documentElement.classList.contains('has-world')) { const c = document.querySelector('#ngobrol'); m.push(['ngobrol', top(c) + (c.offsetHeight - vh) / 2]); }
     return m;
   });

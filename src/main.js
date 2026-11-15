@@ -531,6 +531,14 @@ async function boot() {
     const worldEl = $('#world'), zone = (z) => { worldEl.dataset.zone = z; };
     const zones = [...(root.classList.contains('has-world') ? [['#kerja', 'studio']] : []), ...$$('[data-s3d]').map((el) => [el, 'room']), ...(root.classList.contains('has-world') ? [['#ngobrol', 'contact']] : [])];
     zones.forEach(([el, z]) => ScrollTrigger.create({ trigger: el, start: 'top 55%', end: 'bottom 55%', onToggle: (st) => st.isActive && zone(z) }));
+    // the timeline dissolves before the photo corner: its text and its veil fade out (scrubbed, so scrolling up brings
+    // them back) while the photo window comes up from the bottom; the laptop zoom only starts once it is clear
+    if ($('#jejak') && $('#foto')) {
+      // text first (foto top 96% -> 82% of the screen), then the veil (88% -> 72%), so no text ever sits on the 3D
+      const jr = $('#jejak'), tl = gsap.timeline({ scrollTrigger: { trigger: '#foto', start: 'top 96%', end: 'top 72%', scrub: true } });
+      tl.fromTo($('#jejak .wrap'), { autoAlpha: 1 }, { autoAlpha: 0, ease: 'none', duration: 14, immediateRender: false }, 0)
+        .fromTo(jr, { '--veilA': 1 }, { '--veilA': 0, ease: 'none', duration: 16, immediateRender: false }, 8);
+    }
   }
 
   chips.forEach((c) => {

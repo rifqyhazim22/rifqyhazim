@@ -243,8 +243,8 @@ export function buildStations({ scene, lite, journeyCount = 6, photoUrl }) {
       screen,
       fixed: true, // its window is a whole screen tall: no ride-along offset
       pose(k, o) {
-        // dolly in from a wide shot to the screen filling most of the view, then ease back out after
-        const z = ss(-0.9, 0.05, k), back_ = ss(0.35, 1.2, k);
+        // (wide while the timeline above dissolves, k < -0.62) dolly in from a wide shot to the screen filling most of the view, then ease back out after
+        const z = ss(-0.62, 0.05, k), back_ = ss(0.35, 1.2, k);
         const zoom = z * (1 - back_);
         o.P.set(X + lerp(1.6, 0, zoom), lerp(4.4, 2.74, zoom), lerp(10, 3.7, zoom));
         o.L.set(X, lerp(2.0, 2.64, zoom), lerp(0, -0.95, zoom));
