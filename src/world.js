@@ -165,6 +165,13 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     Object.entries(sections).forEach(([key, el]) => { if (el && room.stations[key]) { const top = docTop(el); list.push({ key, top, at: top - vh * 0.1, win: parseFloat(getComputedStyle(el).paddingTop) || vh * 0.5 }); } });
     if (!lite && contactEl) { const top = docTop(contactEl); list.push({ key: 'contact', top, at: top + (contactEl.offsetHeight - vh) / 2 }); }
     stops = list.map((x) => ({ end: x.at, ...x })).sort((a, b) => a.at - b.at);
+    // the photo corner -> studio crane runs while the opaque "now" sheet covers the screen (it starts and ends slowly
+    // in the strips the sheet leaves open), so the camera never sweeps the whole room behind the intro text
+    const nowEl = document.querySelector('.sheet-now'), fi = stops.findIndex((x) => x.key === 'foto');
+    if (nowEl && fi >= 0 && stops[fi + 1]?.key === 'studio') {
+      const nt = docTop(nowEl), nb = nt + nowEl.offsetHeight;
+      stops[fi].leave = Math.max(stops[fi].at, nt - vh * 0.25); stops[fi + 1].arrive = Math.min(stops[fi + 1].at, nb - vh * 0.75);
+    }
   }
   refresh(); addEventListener('resize', () => requestAnimationFrame(refresh));
 
@@ -238,6 +245,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
   const t0 = performance.now();
   const P = new THREE.Vector3(), L = new THREE.Vector3();
   let last = performance.now(), slow = 0, frames = 0;
+  const bg = { r: '', c: '' };
   const groupOf = (key) => (key === 'studio' ? 'studio' : key === 'contact' ? 'contact' : 'room');
   function frame() {
     requestAnimationFrame(frame);
@@ -253,7 +261,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     while (ia < stops.length - 1 && s > stops[ia + 1].at) ia++;
     const A = stops[ia], B = s > A.end && stops[ia + 1] ? stops[ia + 1] : null;
     let t = 0;
-    if (B) { const a0 = A.end + vh * 0.25, b0 = B.at - vh * 0.35; t = b0 > a0 ? sm(a0, b0, s) : sm(A.end, B.at, s); }
+    if (B) { const a0 = A.leave ?? A.end + vh * 0.25, b0 = B.arrive ?? B.at - vh * 0.35; t = b0 > a0 ? sm(a0, b0, s) : sm(A.end, B.at, s); }
     poseOf(A, s, pa); updateStop(A, s);
     if (B) { poseOf(B, s, pb); updateStop(B, s); }
     // neighbours keep their own scroll state too, so nothing pops when they come into view
@@ -272,7 +280,12 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
     studio.visible = w.studio > 0.001; contact.visible = w.contact > 0.001; room.root.visible = w.room > 0.001;
     rHemi.intensity = 0.9 * roomLight * w.room; rKey.intensity = 1.6 * roomLight * w.room;
     rKey.position.set(L.x + 4, 10, 7); rKey.target.position.set(L.x, 0, -1);
-    if (worldEl) { const z = w.studio > 0.5 ? 'studio' : w.contact > 0.5 ? 'contact' : 'room'; if (worldEl.dataset.zone3d !== z) worldEl.dataset.zone3d = z; }
+    if (worldEl) {
+      const z = w.studio > 0.5 ? 'studio' : w.contact > 0.5 ? 'contact' : 'room'; if (worldEl.dataset.zone3d !== z) worldEl.dataset.zone3d = z;
+      // backdrop crossfade follows the same weights as the scene groups (see .world::before/::after)
+      const wr = w.room.toFixed(3), wc = w.contact.toFixed(3);
+      if (wr !== bg.r) { bg.r = wr; worldEl.style.setProperty('--wR', wr); } if (wc !== bg.c) { bg.c = wc; worldEl.style.setProperty('--wC', wc); }
+    }
     P.x += pointer.sx * 0.5; P.y -= pointer.sy * 0.25;
     camera.position.copy(P); camera.lookAt(L);
     camera.setViewOffset(innerWidth, innerHeight, ox, oy, innerWidth, innerHeight);
@@ -282,7 +295,7 @@ export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {
 
   // visibility: render only while a part of the page that shows the world is on screen
   const vis = new Map();
-  const io = new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.isIntersecting)); visible = [...vis.values()].some(Boolean); }, { threshold: 0 });
+  const io = new IntersectionObserver((es) => { es.forEach((e) => vis.set(e.target, e.isIntersecting)); visible = [...vis.values()].some(Boolean); }, { threshold: 0, rootMargin: '25% 0px' }); // start a little early so a window never opens on an empty frame
   [studioEl, contactEl, ...Object.values(sections)].filter(Boolean).forEach((el) => io.observe(el));
 
   return {

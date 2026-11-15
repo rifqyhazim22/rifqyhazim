@@ -308,8 +308,6 @@ html.lenis, html.lenis body { height:auto; }
 /* 3D mode only: layered sheets over a fixed world */
 .world { display:none; }
 .has-world .world { display:block; position:fixed; inset:0; z-index:0; background:radial-gradient(120% 90% at 50% 70%, #1E3A38 0%, #0E2120 60%, #0A1817 100%); transition:background .6s var(--ease-smooth); }
-.has-world .world[data-zone="contact"] { background:radial-gradient(110% 90% at 65% 60%, #FBF3D4 0%, #F0EBE3 55%, #E6E2DA 100%); }
-[data-theme="dark"].has-world .world[data-zone="contact"] { background:radial-gradient(110% 90% at 65% 60%, #3A3220 0%, #1A1714 60%, #141110 100%); }
 .world canvas { width:100%; height:100%; display:block; }
 .has-world main, .has-world .site-footer { position:relative; z-index:1; }
 .has-world .sheet { position:relative; background:var(--bg); z-index:2; }
@@ -335,7 +333,7 @@ html.lenis, html.lenis body { height:auto; }
 .has-world .holo-tag { display:flex; align-items:center; gap:8px; position:absolute; left:0; top:0; padding:6px 10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#F0EBE3; background:rgba(14,33,32,.75); border:1px solid rgba(76,184,176,.45); border-radius:8px; transform:translate(-50%,-100%); opacity:0; transition:opacity .4s; }
 .has-world .holo-tag.on { opacity:1; }
 .dot-s { width:7px; height:7px; border-radius:99px; background:var(--c); }
-.has-world .scan-counter { display:flex; flex-direction:row; align-items:baseline; gap:12px; position:absolute; left:50%; top:168px; transform:translateX(-50%); color:#4CB8B0; text-align:center; padding:6px 16px; border-radius:999px; border:1px solid rgba(76,184,176,.28); background:rgba(14,33,32,.45); backdrop-filter:blur(6px); }
+.has-world .scan-counter { display:flex; flex-direction:row; align-items:baseline; gap:12px; position:absolute; left:50%; top:auto; bottom:clamp(24px, 6vh, 60px); transform:translateX(-50%); z-index:2; /* bottom centre, on the floor between the two platforms: clear of the tags above the characters */ color:#4CB8B0; text-align:center; padding:6px 16px; border-radius:999px; border:1px solid rgba(76,184,176,.28); background:rgba(14,33,32,.45); backdrop-filter:blur(6px); }
 .scan-counter span { font-size:26px; font-weight:600; letter-spacing:.08em; line-height:1; font-variant-numeric:tabular-nums; }
 .scan-counter small { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:#B4AAA0; }
 .has-world .stage-contact { background:transparent; min-height:100vh; display:flex; align-items:center; position:relative; z-index:1; padding-top:140px; }
@@ -912,8 +910,8 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
 /* ---------- 3D section windows (full + lite): each content section opens with a window onto its corner of the
    3D room, then its content sits on a soft veil. The world canvas is fixed behind the whole page. */
 .s3d .world { display:block; position:fixed; inset:0; z-index:0; }
-.s3d .world[data-zone="room"], .s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #FBF7F0 0%, #F0EBE3 55%, #E4DDD2 100%); }
-[data-theme="dark"].s3d .world[data-zone="room"], [data-theme="dark"].s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #2A2520 0%, #1A1714 60%, #12100E 100%); }
+.s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #FBF7F0 0%, #F0EBE3 55%, #E4DDD2 100%); }
+[data-theme="dark"].s3d:not(.has-world) .world { background:radial-gradient(120% 90% at 50% 35%, #2A2520 0%, #1A1714 60%, #12100E 100%); }
 .s3d main, .s3d .site-footer { position:relative; z-index:1; }
 .s3d .sheet-content { background:transparent; box-shadow:none; border-radius:0; overflow:visible; }
 .s3d [data-s3d] { --win:52vh; --veil:color-mix(in srgb, var(--bg) 94%, transparent); position:relative; padding-top:var(--win) !important;
@@ -942,7 +940,7 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
 @media (max-width: 600px) { .s3d [data-s3d] { --win:46vh; } .s3d #foto { --win:100vh; } }
 
 /* ---------- Studio (kerja), day look: light theme gets a bright, airy daylight stage; dark keeps the neon grid */
-html:not([data-theme="dark"]).has-world .world:not([data-zone="room"]):not([data-zone="contact"]) { background:radial-gradient(120% 90% at 50% 62%, #FFFFFF 0%, #EEF5F3 45%, #DDEBE8 100%); }
+html:not([data-theme="dark"]).has-world .world { background:radial-gradient(120% 90% at 50% 62%, #FFFFFF 0%, #EEF5F3 45%, #DDEBE8 100%); }
 html:not([data-theme="dark"]).has-world .stage-studio { color:var(--ink); }
 html:not([data-theme="dark"]).has-world .stage-studio .sec-title h2 { color:var(--ink); }
 html:not([data-theme="dark"]).has-world .stage-studio .sec-title .rule { background:rgba(15,110,106,.25); }
@@ -952,3 +950,16 @@ html:not([data-theme="dark"]).has-world .holo-tag { color:var(--ink); background
 html:not([data-theme="dark"]).has-world .scan-counter { color:var(--teal); background:rgba(255,255,255,.7); border-color:rgba(15,110,106,.2); box-shadow:0 6px 18px rgba(15,60,58,.08); }
 html:not([data-theme="dark"]).has-world .scan-counter small { color:#6B655D; }
 html:not([data-theme="dark"]) .connectors path { stroke:#0F6E6A; }
+
+/* ---------- Full 3D backdrops: the studio colour is the floor; the room and contact backdrops fade over it with the
+   camera (world.js writes --wR / --wC every frame, so the crossfade is scrubbed and runs backwards on the way up).
+   Before the world renders, the section zone picks the backdrop. */
+.has-world .world { --wR:0; --wC:0; }
+.has-world .world[data-zone="room"] { --wR:1; }
+.has-world .world[data-zone="contact"] { --wC:1; }
+.has-world .world::before, .has-world .world::after { content:''; position:absolute; inset:0; pointer-events:none; }
+.has-world .world::before { background:radial-gradient(120% 90% at 50% 35%, #FBF7F0 0%, #F0EBE3 55%, #E4DDD2 100%); opacity:var(--wR); }
+.has-world .world::after { background:radial-gradient(110% 90% at 65% 60%, #FBF3D4 0%, #F0EBE3 55%, #E6E2DA 100%); opacity:var(--wC); }
+[data-theme="dark"].has-world .world::before { background:radial-gradient(120% 90% at 50% 35%, #2A2520 0%, #1A1714 60%, #12100E 100%); }
+[data-theme="dark"].has-world .world::after { background:radial-gradient(110% 90% at 65% 60%, #3A3220 0%, #1A1714 60%, #141110 100%); }
+.has-world .world canvas { position:relative; z-index:1; }
