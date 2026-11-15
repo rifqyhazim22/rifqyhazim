@@ -58,9 +58,14 @@ export function initWaiter({ t, onLang, onYes, onNo, onLater, reduced, isBlocked
     else if (mode === 'first') store.set(SESSION_KEY, '1', sessionStorage);
     else onLater?.();
     const refocus = c.contains(document.activeElement) && lastFocus && document.contains(lastFocus);
-    const done = () => { c.remove(); if (refocus) lastFocus.focus({ preventScroll: true }); };
+    let gone = false;
+    const done = () => { if (gone) return; gone = true; c.remove(); if (refocus) lastFocus.focus({ preventScroll: true }); };
+    c.inert = true; c.setAttribute('aria-hidden', 'true'); // leaving: no longer interactive
     if (reduced) done();
-    else c.animate([{ opacity: 1, transform: 'none', filter: 'blur(0)' }, { opacity: 0, transform: 'translateY(18px) scale(.97)', filter: 'blur(2px)' }], { duration: 260, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).onfinish = done;
+    else {
+      c.animate([{ opacity: 1, transform: 'none', filter: 'blur(0)' }, { opacity: 0, transform: 'translateY(18px) scale(.97)', filter: 'blur(2px)' }], { duration: 220, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).onfinish = done;
+      setTimeout(done, 300); // even if frames are slow, it is gone right after the animation time
+    }
   }
   function onKey(e) { if (e.key === 'Escape' && card && !isBlocked()) close('later'); }
   // first visit: until answered (or "later" this session); returning visitor: the welcome-back card once per session
