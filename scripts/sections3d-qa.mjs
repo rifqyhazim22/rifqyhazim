@@ -40,7 +40,9 @@ for (const [dev, opts] of [['desk', desk], ['phone', phone]]) {
     const info = await p.evaluate(() => window.__world?.info());
     console.log(dev, scheme, JSON.stringify(info));
     const ms = await marks(p);
-    for (const [name, y] of ms) { await to(p, y); await settle(p); await p.screenshot({ path: `${O}${dev}-${scheme}-${name}.png` }); }
+    // software GL can stall the compositor for a while after a long jump: give the shot time, and retake a blank (background-only) frame
+    const shot = async (path) => { for (let i = 0; i < 3; i++) { const buf = await p.screenshot({ path, timeout: 90000 }).catch(() => null); if (buf && buf.length > 20000) return; await settle(p, 3000); } };
+    for (const [name, y] of ms) { await to(p, y); await settle(p); await shot(`${O}${dev}-${scheme}-${name}.png`); }
     // determinism: pose at a mid point reached going down equals the pose there coming back up
     const mid = ms.find((m) => m[0] === 'tanya')[1] + 200;
     const pose = () => p.evaluate(() => { const c = window.__world.cam(); return c.map((v) => Math.round(v * 1000) / 1000).join(','); });
