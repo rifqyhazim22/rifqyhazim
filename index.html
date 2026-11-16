@@ -204,13 +204,25 @@
         <div class="sec-title"><span class="rule"></span><h2 id="projTitle" data-i18n="proj.title">Proyek pilihan</h2><span class="rule"></span></div>
         <div class="grid3">
           <div class="card work" data-cursor="card" data-tilt data-reveal tabindex="0" role="button" data-project>
-            <div class="thumb" style="--tbg:var(--teal-soft)"><div class="t-bars"><i style="--h:40%;--c:var(--butter)"></i><i style="--h:75%;--c:var(--teal)"></i><i style="--h:55%;--c:var(--coral)"></i></div></div>
+            <div class="thumb thumb-shot" style="--tbg:var(--teal-soft)">
+              <picture>
+                <source type="image/avif" srcset="/img/proyek-scale-480.avif 480w, /img/proyek-scale-800.avif 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <source type="image/webp" srcset="/img/proyek-scale-480.webp 480w, /img/proyek-scale-800.webp 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <img src="/img/proyek-scale-480.webp" width="800" height="507" loading="lazy" decoding="async" data-i18n-alt="proj.a.alt" alt="Grafik omzet riil relatif per bulan, naik setelah ambil alih April 2026.">
+              </picture>
+            </div>
             <div class="meta"><span class="tag" style="--bg:var(--butter-soft);--fg:var(--ink)" data-i18n="tag.ads">Iklan</span><span class="mono yr">2026</span></div>
             <h3 class="serif" data-pc="a.title"></h3><p data-pc="a.lead"></p>
             <ul class="stats" data-stats="a" aria-label="Angka kunci"></ul>
           </div>
           <div class="card work" data-cursor="card" data-tilt data-reveal tabindex="0" role="button" data-project>
-            <div class="thumb" style="--tbg:var(--lilac-soft)"><svg class="t-net" viewBox="0 0 120 70" aria-hidden="true"><path d="M30 30 L70 18 M30 30 L64 50" stroke="var(--lilac)" stroke-width="1.5"/><circle cx="30" cy="30" r="6" fill="var(--lilac)"/><circle cx="70" cy="18" r="5" fill="var(--mint)"/><circle cx="64" cy="50" r="5" fill="var(--sky)"/></svg></div>
+            <div class="thumb thumb-shot" style="--tbg:var(--lilac-soft)">
+              <picture>
+                <source type="image/avif" srcset="/img/proyek-agents-480.avif 480w, /img/proyek-agents-800.avif 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <source type="image/webp" srcset="/img/proyek-agents-480.webp 480w, /img/proyek-agents-800.webp 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <img src="/img/proyek-agents-480.webp" width="800" height="507" loading="lazy" decoding="async" data-i18n-alt="proj.b.alt" alt="168 kesalahan entri data terdeteksi otomatis; laporan harian siap setiap pagi.">
+              </picture>
+            </div>
             <div class="meta"><span class="tag" style="--bg:var(--lilac-soft);--fg:var(--ink)" data-i18n="tag.agent">Agen AI</span><span class="mono yr">2026</span></div>
             <h3 class="serif" data-pc="b.title"></h3><p data-pc="b.lead"></p>
             <ul class="stats" data-stats="b" aria-label="Angka kunci"></ul>

@@ -191,6 +191,8 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 }
 .thumb > * { transition:transform .5s var(--ease-ui); }
 .work:hover .thumb > * { transform:scale(1.06); }
+#proyek .thumb-shot picture, #proyek .thumb-shot img { width:100%; height:100%; display:block; object-fit:cover; object-position:center; }
+#proyek .thumb-shot img { pointer-events:none; }
 .t-bars { display:flex; gap:12px; align-items:flex-end; height:90px; }
 .t-bars i { width:26px; height:var(--h); background:var(--c); border-radius:4px 4px 0 0; }
 .t-badge { position:absolute; right:14px; top:14px; width:30px; height:30px; border-radius:999px; background:var(--teal); color:var(--on-teal); display:grid; place-items:center; font-size:14px; }
