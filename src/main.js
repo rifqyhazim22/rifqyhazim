@@ -753,7 +753,6 @@ if (!reduced && matchMedia('(pointer: fine)').matches) {
   });
 }
 
-const mq = $('#marquee');
-mq.append(...[...mq.children].map((n) => { const c = n.cloneNode(true); c.setAttribute('aria-hidden', 'true'); return c; }));
+// Tools chips wrap in place (no infinite marquee clone).
 
 boot();

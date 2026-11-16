@@ -204,15 +204,15 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 .tag { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; padding:3px 8px; border-radius:6px; background:var(--bg); color:var(--chip-ink); }
 .yr { font-size:12px; color:var(--muted); }
 
-/* Tools marquee */
-.tools { padding:40px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:28px; overflow:hidden; }
-.tools-title { flex:none; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:500; margin:0 0 0 max(24px, calc((100vw - 1200px)/2 + 24px)); }
-.marquee { flex:1; overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); }
-.marquee-track { display:flex; gap:12px; width:max-content; animation:marq 28s linear infinite; }
-.marquee:hover .marquee-track { animation-play-state:paused; }
-@keyframes marq { to { transform:translateX(-50%); } }
+/* Tools: a taller, roomier chip band (title above, chips wrapping in two rows) */
+.tools { padding:72px 0 80px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; flex-direction:column; align-items:center; gap:28px; overflow:hidden; }
+.tools-title { flex:none; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:500; margin:0; text-align:center; max-width:1200px; width:100%; padding:0 max(24px, var(--page-pad, 24px)); box-sizing:border-box; }
+.marquee { width:100%; max-width:1200px; padding:0 max(24px, var(--page-pad, 24px)); box-sizing:border-box; overflow:visible; }
+.marquee-track { display:grid; grid-template-columns:repeat(3, max-content); justify-content:center; gap:16px 20px; width:100%; }
 .pill { background:var(--bg); padding:8px 16px; border-radius:999px; font-size:14px; font-weight:500; white-space:nowrap; color:var(--chip-ink); }
 .tools .pill, .topic { background:var(--bg); }
+.tools .pill { padding:16px 26px; font-size:17px; line-height:1.2; min-height:52px; display:inline-flex; align-items:center; box-sizing:border-box; }
+@keyframes marq { to { transform:translateX(-50%); } }
 
 /* Topics */
 .topics { list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
@@ -284,6 +284,9 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
   #proyek .card.work h3 { min-height:0; }
   #proyek .work .stats { margin-top:16px; }
   .scene-hint { display:none; }
+  .tools { padding:64px 0 72px; gap:24px; }
+  .marquee-track { display:flex; flex-wrap:wrap; justify-content:center; gap:14px 14px; grid-template-columns:unset; }
+  .tools .pill { padding:14px 22px; font-size:16px; min-height:48px; }
 }
 @media (max-width: 600px) {
   body { font-size:16px; }
@@ -298,9 +301,11 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
   .sec-title { margin-bottom:28px; }
   .now-list li { flex-wrap:wrap; gap:8px 12px; }
   .card { padding:22px; }
-  .tools { flex-direction:column; align-items:flex-start; gap:16px; }
-  .tools-title { margin-left:20px; }
+  .tools { padding:56px 0 64px; gap:22px; }
+  .tools-title { margin-left:0; font-size:12px; }
   .marquee { width:100%; }
+  .marquee-track { display:flex; flex-wrap:wrap; justify-content:center; gap:12px 12px; grid-template-columns:unset; }
+  .tools .pill { padding:13px 20px; font-size:15px; min-height:44px; }
   .journey li { grid-template-columns:14px 36px 1fr; }
   .journey .role { grid-column:3; }
   .journey .yr { grid-column:3; }
