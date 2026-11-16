@@ -26,7 +26,7 @@ export const PROJECTS = {
   a: {
     year: '2026',
     id: {
-      title: 'Scale-up 3 toko marketplace dengan profit',
+      title: 'Scale-up 3 toko marketplace',
       lead: 'Omzet riil rata-rata per bulan 3,20×, dengan ROAS riil 5,82 yang di atas titik balik modal setiap bulan.',
       stats: [['3,20×', 'omzet riil / bulan'], ['5,82', 'ROAS riil'], ['+86,8%', 'invoice / bulan']],
       ctx: ['Perusahaan material geotekstil & konstruksi. Sejak April 2026 aku pegang penuh iklan & penjualan 3 toko di Shopee (Iklan Produk) dan Tokopedia/TikTok (GMV Max).'],
@@ -35,7 +35,7 @@ export const PROJECTS = {
       res: ['Omzet riil rata-rata per bulan 3,20×', 'Invoice per bulan +86,8%', 'ROAS riil 5,82, di atas titik balik modal setiap bulan (rentang 5,15–6,68)', 'Margin profit bersih sekitar 24%', 'Tingkat batal 7,70%'],
     },
     en: {
-      title: 'Scaling 3 marketplace stores, profitably',
+      title: 'Scaling 3 marketplace stores',
       lead: 'Average monthly real revenue 3.20×, with a real ROAS of 5.82 that stayed above break-even every month.',
       stats: [['3.20×', 'real revenue / month'], ['5.82', 'real ROAS'], ['+86.8%', 'invoices / month']],
       ctx: ['A geotextile & construction materials company. Since April 2026 I have fully owned ads & sales for 3 stores on Shopee (Product Ads) and Tokopedia/TikTok (GMV Max).'],
@@ -47,16 +47,16 @@ export const PROJECTS = {
   b: {
     year: '2026',
     id: {
-      title: 'Tim AI agent buat operasional iklan',
-      lead: 'Operasional harian 3 toko dijalankan tim AI agent yang aku rancang. 168 salah input data tertangkap.',
+      title: 'Tim AI agent untuk 3 toko',
+      lead: 'Operasional harian 3 toko dijalankan tim AI agent yang aku rancang, dengan 168 salah input data tertangkap.',
       stats: [['6', 'routine otomatis'], ['168', 'salah input tertangkap'], ['34 / 73', 'file Sheets / tab']],
       ctx: ['Operasional harian 3 toko dijalankan tim AI agent yang aku rancang & arahkan.'],
       did: ['Aturan main sistemnya: ROAS riil dari invoice.', 'Data bolong dicatat, tidak ditimpa tebakan.', 'Perubahan data yang sudah ditutup harus nunggu persetujuanku.', 'Agent bantu cek dan lapor, keputusan tetap di aku.'],
       res: ['6 routine otomatis: sinkron penjualan, cek kelengkapan data iklan, audit harian & mingguan, perbandingan metrik mingguan, tutup bulan', 'Mengelola 34 file Google Sheets / 73 tab', '168 salah input data tertangkap', 'Oktober 2026 jadi tutup bulan pertama lewat routine otomatis'],
     },
     en: {
-      title: 'An AI agent team for ad operations',
-      lead: 'Daily operations for 3 stores run on an AI agent team I designed. 168 data entry errors caught.',
+      title: 'An AI agent team for 3 stores',
+      lead: 'Daily operations for 3 stores run on an AI agent team I designed, with 168 data entry errors caught.',
       stats: [['6', 'automated routines'], ['168', 'entry errors caught'], ['34 / 73', 'Sheets files / tabs']],
       ctx: ['Daily operations for 3 stores are run by an AI agent team I designed & direct.'],
       did: ['The system rules: real ROAS from invoices.', 'Missing data gets logged, never overwritten with guesses.', 'Changes to closed data have to wait for my approval.', 'Agents check and report; the decisions stay with me.'],
@@ -65,22 +65,22 @@ export const PROJECTS = {
   },
   c: {
     year: '2026',
-    links: [['Demo', 'https://medimart-adv.vercel.app'], ['Repo', 'https://github.com/rifqyhazim22/medimart.adv']],
+    // Demo and repo links removed: the repo is private and the Vercel project is paused.
     id: {
-      title: 'MediMart, e-commerce full-stack',
+      title: 'MediMart, marketplace apotek',
       lead: 'Marketplace apotek online dengan peran admin, seller, dan buyer, plus chat realtime.',
-      stats: [['Admin · Seller · Buyer', 'tiga peran'], ['Live', 'demo + repo']],
+      stats: [['3', 'peran'], ['Realtime', 'chat'], ['Jan–Mar', 'dibuat 2026']],
       ctx: ['Marketplace apotek online, dibuat Jan–Mar 2026.'],
       did: ['Peran admin, seller, dan buyer.', 'Katalog, keranjang, checkout, chat realtime, integrasi pembayaran.'],
-      res: ['Demo yang jalan dan repo publik, tautannya di bawah.'],
+      res: ['Katalog, keranjang, checkout, chat realtime, dan integrasi pembayaran.'],
     },
     en: {
-      title: 'MediMart, full-stack e-commerce',
+      title: 'MediMart, pharmacy marketplace',
       lead: 'An online pharmacy marketplace with admin, seller, and buyer roles, plus realtime chat.',
-      stats: [['Admin · Seller · Buyer', 'three roles'], ['Live', 'demo + repo']],
+      stats: [['3', 'roles'], ['Realtime', 'chat'], ['Jan–Mar', 'built 2026']],
       ctx: ['An online pharmacy marketplace, built Jan–Mar 2026.'],
       did: ['Admin, seller, and buyer roles.', 'Catalog, cart, checkout, realtime chat, payment integration.'],
-      res: ['A working demo and a public repo, links below.'],
+      res: ['Catalog, cart, checkout, realtime chat, and payment integration.'],
     },
   },
 };

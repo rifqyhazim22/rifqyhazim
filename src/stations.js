@@ -243,17 +243,19 @@ export function buildStations({ scene, lite, journeyCount = 6, photoUrl }) {
       screen,
       fixed: true, // its window is a whole screen tall: no ride-along offset
       pose(k, o) {
-        // (wide while the timeline above dissolves, k < -0.62) dolly in from a wide shot to the screen filling most of the view, then ease back out after
-        const z = ss(-0.62, 0.05, k), back_ = ss(0.35, 1.2, k);
+        // Arrive already zoomed on the portrait (k ≈ 0). The dolly-in happens while leaving the hero
+        // (k < 0) so the handoff stays smooth. Scrolling on toward "Sekarang" (k > 0) pulls back to
+        // the open laptop and desk. Scroll up plays the same path in reverse.
+        const z = ss(-0.65, 0.0, k), back_ = ss(0.22, 0.92, k);
         const zoom = z * (1 - back_);
         o.P.set(X + lerp(1.6, 0, zoom), lerp(4.4, 2.74, zoom), lerp(10, 3.7, zoom));
         o.L.set(X, lerp(2.0, 2.64, zoom), lerp(0, -0.95, zoom));
       },
       update(k) {
-        const open = ss(-1, -0.35, k);
+        const open = ss(-0.9, -0.2, k);
         hinge.rotation.x = lerp(Math.PI * 0.5, -0.18, open);
         screenGlow.material.opacity = open * 0.35;
-        photoMat.color.setScalar(photoMat.map ? 0.15 + 0.85 * ss(-0.55, -0.15, k) : 0);
+        photoMat.color.setScalar(photoMat.map ? 0.15 + 0.85 * ss(-0.55, -0.05, k) : 0);
       },
     };
   }

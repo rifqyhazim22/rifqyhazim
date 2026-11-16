@@ -683,6 +683,7 @@ async function boot() {
   }
   gsap.utils.toArray('.sec-title').forEach((el) => {
     if (el.closest('.stage-studio') && root.classList.contains('has-world')) return;
+    if (el.closest('#foto') && root.classList.contains('has-world')) return;
     gsap.from(el.querySelectorAll('.rule'), { scaleX: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play none none reverse' } });
     gsap.from(el.querySelector('h2'), { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', toggleActions: 'play none none reverse' } });
   });
@@ -700,8 +701,8 @@ async function boot() {
   // move backwards, so it comes in again on the way down. Children keep their own [data-reveal] timing on top.
   // The studio stage is sticky in the world layout, so it never gets a transform: only its heading eases in.
   const withWorld = root.classList.contains('has-world');
-  const secs = ['#foto', '.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
-  if (!withWorld) secs.splice(2, 0, '#kerja');
+  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
+  if (!withWorld) { secs.unshift('#foto'); secs.splice(2, 0, '#kerja'); }
   secs.map((s) => $(s)).filter(Boolean).forEach((sec) => {
     const clip = !small; // phones: transform + opacity only (no clip-path repaint of big boxes)
     gsap.fromTo(sec,

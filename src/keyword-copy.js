@@ -16,7 +16,7 @@ export const PROPOSALS = {
     },
   },
   projects: {
-    a: { id: { title: 'Iklan Shopee & GMV Max: scale-up 3 toko marketplace dengan profit' }, en: { title: 'Shopee Ads & GMV Max: scaling 3 marketplace stores, profitably' } },
-    b: { id: { title: 'Tim AI agent buat operasional iklan marketplace' }, en: { title: 'An AI agent team for marketplace ad operations' } },
+    a: { id: { title: 'Scale-up 3 toko marketplace' }, en: { title: 'Scaling 3 marketplace stores' } },
+    b: { id: { title: 'Tim AI agent untuk 3 toko' }, en: { title: 'An AI agent team for 3 stores' } },
   },
 };

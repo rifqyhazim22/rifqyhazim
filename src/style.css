@@ -144,9 +144,18 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 .card h3 { font-size:28px; line-height:1.1; margin:10px 0 12px; letter-spacing:-0.01em; }
 .card p { margin:0; color:var(--muted); font-size:16px; }
 .approach { border-top:6px solid var(--edge); }
-.work { padding:16px 16px 26px; }
+.work { padding:16px 16px 26px; display:flex; flex-direction:column; height:100%; }
 .work h3, .work p, .work .meta { padding:0 10px; }
-.thumb { position:relative; height:200px; border-radius:16px; background:var(--tbg); display:grid; place-items:center; overflow:hidden; margin-bottom:18px; }
+#proyek .grid3 { align-items:stretch; }
+#proyek .card.work h3 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.3em; line-height:1.15; }
+#proyek .card.work p { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+#proyek .work .stats { margin-top:auto; }
+.thumb { position:relative; height:200px; min-height:200px; flex:none; border-radius:16px; background:var(--tbg); display:grid; place-items:center; overflow:hidden; margin-bottom:18px; }
+@media (min-width: 901px) {
+  #proyek .thumb { height:168px; min-height:168px; margin-bottom:14px; }
+  #proyek .card.work { padding:14px 14px 18px; }
+  #proyek .work h3 { font-size:clamp(22px, 1.1vw + 11px, 26px); margin:8px 0 8px; }
+}
 .thumb > * { transition:transform .5s var(--ease-ui); }
 .work:hover .thumb > * { transform:scale(1.06); }
 .t-bars { display:flex; gap:12px; align-items:flex-end; height:90px; }
@@ -921,6 +930,43 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
 .s3d .tools[data-s3d] { border-top:0; }
 .s3d #foto { --win:105vh; padding-bottom:40px !important; }
 .s3d #foto .sec-title { margin-bottom:0; }
+/* Desktop world: arrival is one complete frame — zoomed portrait with name/role/location already on screen.
+   Extra section height after that first viewport is the pull-back toward "Sekarang". */
+.s3d.has-world #foto {
+  --win: 0px;
+  padding: 0 !important;
+  min-height: 200vh;
+  background: none;
+}
+.s3d.has-world #foto .wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-top: calc(100vh - 220px);
+  padding-bottom: 48px;
+  box-sizing: border-box;
+  background: none;
+}
+.s3d.has-world #foto .wrap::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 280px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg-alt) 75%, transparent) 45%, color-mix(in srgb, var(--bg-alt) 92%, transparent) 100%);
+  pointer-events: none;
+}
+.s3d.has-world #foto .wrap > * { position: relative; }
+.s3d.has-world #foto .sec-title,
+.s3d.has-world #foto .photo-intro { opacity: 1; transform: none; }
+/* Phone / no-3D: keep the compact 2D block, but give it a full frame so "Sekarang" does not peek in */
+html.no-webgl #foto, html.lite #foto {
+  min-height: calc(100svh - 72px);
+  display: flex;
+  align-items: center;
+}
+html.no-webgl #foto .wrap, html.lite #foto .wrap { width: 100%; }
+.s3d.has-world #proyek { --win: 28vh; }
 /* intro under the photo: name, role, base (same facts as the hero and contact) */
 .photo-intro { display:flex; flex-direction:column; align-items:center; gap:6px; margin:18px auto 28px; text-align:center; }
 .photo-name { font-size:clamp(28px, 4vw, 40px); line-height:1; }

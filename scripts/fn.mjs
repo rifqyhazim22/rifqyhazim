@@ -47,8 +47,8 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   await p.keyboard.press('Escape'); await p.waitForTimeout(1300); s = await st(p); ok('Esc closes detail', s.hidden && s.hash === '', JSON.stringify(s));
   await p.click('[data-project] >> nth=1'); await p.waitForTimeout(1600); await p.goBack(); await p.waitForTimeout(1300); s = await st(p); ok('browser back closes detail', s.hidden, JSON.stringify(s));
   await p.click('[data-project] >> nth=2'); await p.waitForTimeout(1600);
-  const cLinks = await p.evaluate(() => [...document.querySelectorAll('#dLinks a')].map((a) => a.href + '|' + a.target + '|' + a.rel));
-  ok('MediMart detail shows demo + repo links (new tab, noopener)', cLinks.length === 2 && cLinks.every((x) => x.includes('_blank|noopener')), cLinks.join(' '));
+  const cLinks = await p.evaluate(() => ({ n: document.querySelectorAll('#dLinks a').length, hidden: document.getElementById('dLinksRow').hidden, text: document.getElementById('dRes').innerText }));
+  ok('MediMart detail has no demo or repo links', cLinks.n === 0 && cLinks.hidden && !/demo|repo/i.test(cLinks.text), JSON.stringify(cLinks));
   await p.click('#dNext'); await p.waitForTimeout(1500); s = await st(p); ok('next project cycles to A', s.hash === '#proyek/a');
   await p.click('#dBack'); await p.waitForFunction(() => document.getElementById('detail').hidden, null, { timeout: 5000 }).catch(() => {}); s = await st(p); ok('back button closes detail', s.hidden, JSON.stringify(s));
   await p.goto('about:blank'); await p.goto('http://127.0.0.1:4173/#proyek/b'); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }); await p.waitForTimeout(2500);
