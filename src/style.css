@@ -206,7 +206,7 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 
 /* Tools: a taller, roomier chip band (title above, chips wrapping in two rows) */
 .tools { padding:72px 0 80px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; flex-direction:column; align-items:center; gap:28px; overflow:hidden; }
-.tools-title { flex:none; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:500; margin:0; text-align:center; max-width:1200px; width:100%; padding:0 max(24px, var(--page-pad, 24px)); box-sizing:border-box; }
+.tools-title { flex:none; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:500; margin:0; text-align:center; max-width:1200px; width:100%; padding:0 max(24px, var(--page-pad, 24px)); box-sizing:border-box; }
 .marquee { width:100%; max-width:1200px; padding:0 max(24px, var(--page-pad, 24px)); box-sizing:border-box; overflow:visible; }
 .marquee-track { display:grid; grid-template-columns:repeat(3, max-content); justify-content:center; gap:16px 20px; width:100%; }
 .pill { background:var(--bg); padding:8px 16px; border-radius:999px; font-size:14px; font-weight:500; white-space:nowrap; color:var(--chip-ink); }
@@ -302,10 +302,10 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
   .now-list li { flex-wrap:wrap; gap:8px 12px; }
   .card { padding:22px; }
   .tools { padding:56px 0 64px; gap:22px; }
-  .tools-title { margin-left:0; font-size:12px; }
+  .tools-title { margin-left:0; font-size:13px; }
   .marquee { width:100%; }
-  .marquee-track { display:flex; flex-wrap:wrap; justify-content:center; gap:12px 12px; grid-template-columns:unset; }
-  .tools .pill { padding:13px 20px; font-size:15px; min-height:44px; }
+  .marquee-track { display:grid; grid-template-columns:1fr 1fr; justify-content:stretch; gap:12px; width:100%; }
+  .tools .pill { padding:14px 14px; font-size:15px; min-height:52px; width:100%; white-space:normal; text-align:center; justify-content:center; }
   .journey li { grid-template-columns:14px 36px 1fr; }
   .journey .role { grid-column:3; }
   .journey .yr { grid-column:3; }
