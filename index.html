@@ -228,7 +228,13 @@
             <ul class="stats" data-stats="b" aria-label="Angka kunci"></ul>
           </div>
           <div class="card work" data-cursor="card" data-tilt data-reveal tabindex="0" role="button" data-project>
-            <div class="thumb" style="--tbg:var(--coral-soft)"><div class="t-win"><span></span><b></b><b></b></div></div>
+            <div class="thumb thumb-shot" style="--tbg:var(--coral-soft)">
+              <picture>
+                <source type="image/avif" srcset="/img/proyek-medimart-480.avif 480w, /img/proyek-medimart-800.avif 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <source type="image/webp" srcset="/img/proyek-medimart-480.webp 480w, /img/proyek-medimart-800.webp 800w" sizes="(max-width: 900px) calc(100vw - 48px), 360px">
+                <img src="/img/proyek-medimart-480.webp" width="800" height="507" loading="lazy" decoding="async" data-i18n-alt="proj.c.alt" alt="Tampilan beranda MediMart, marketplace apotek, dengan katalog produk.">
+              </picture>
+            </div>
             <div class="meta"><span class="tag" style="--bg:var(--coral-soft);--fg:var(--ink)" data-i18n="tag.ecom">E-commerce</span><span class="mono yr">2026</span></div>
             <h3 class="serif" data-pc="c.title"></h3><p data-pc="c.lead"></p>
             <ul class="stats" data-stats="c" aria-label="Angka kunci"></ul>
