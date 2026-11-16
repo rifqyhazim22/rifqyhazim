@@ -10,9 +10,10 @@ import { drawClock } from './clock.js';
 
 // Procedural desk room, built in code: no external models.
 // lite = phones/tablets: DPR cap 1.5, no shadow maps (blob shadows only), fewer floaters, simple camera moves, tap instead of hover.
-export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite = false }) {
+// tablet = large tablets on the full tier: desktop scene, pixel ratio capped at 1.5, fewer floaters.
+export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite = false, tablet = false }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, alpha: true, powerPreference: lite ? 'default' : 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1.5 : 2)); // native sharpness on desktop (capped at 2)
+  renderer.setPixelRatio(Math.min(devicePixelRatio, lite || tablet ? 1.5 : 2)); // native sharpness on desktop (capped at 2)
   renderer.shadowMap.enabled = !lite;
   renderer.shadowMap.type = THREE.VSMShadowMap;
 
@@ -163,7 +164,7 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
   // Floating pixels rising from the screens (ads: colour cubes, agents: glowing dots)
   const floaters = [];
   const fcols = ['#F0D36A', '#E87862', '#5EC4A8', '#A888D4', '#5AA3C8'];
-  const nF = lite ? 6 : 14;
+  const nF = lite ? 6 : tablet ? 10 : 14;
   for (let i = 0; i < nF; i++) {
     const ads = i < nF / 2;
     const m = new THREE.Mesh(ads ? new THREE.BoxGeometry(0.07, 0.07, 0.07) : new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: fcols[i % 5], transparent: true }));
@@ -238,6 +239,15 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
     Object.assign(poses.idle, { px: 0, pz: d, py: 3.8, ly: 1.45 }); Object.assign(poses.iklan, { px: -1.2, pz: d * (phone ? 0.84 : 0.86) }); Object.assign(poses.agen, { px: 1.2, pz: d * (phone ? 0.84 : 0.86) });
   }
   if (lite) frameLite();
+  // Portrait desktop-world screens (iPad upright): no side offset (the copy sits above the desk) and pull back so
+  // both characters stay in frame. Landscape keeps the desktop framing.
+  const basePz = { idle: poses.idle.pz, iklan: poses.iklan.pz, agen: poses.agen.pz };
+  let portrait = false;
+  function framePortrait(w, h) {
+    portrait = h > w * 1.05;
+    const k = portrait ? Math.min(1.6, Math.max(1, 0.98 / (w / h))) : 1;
+    for (const n of ['idle', 'iklan', 'agen']) poses[n].pz = basePz[n] * k;
+  }
   const rig = { ...poses.intro };
   let focus = null, active = 'iklan', scrollP = 0, intro = true;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
@@ -247,8 +257,10 @@ export function createScene({ canvas, hero, bubble, onCharHover, onCharTap, lite
     const w = hero.clientWidth, h = hero.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    wide = !lite && w > 900; vw = w; vh = h;
-    if (lite) { frameLite(); if (!intro && !(flight && flight.isActive())) Object.assign(rig, poses[focus || 'idle']); }
+    if (!lite) framePortrait(w, h);
+    wide = !lite && w > 900 && !portrait; vw = w; vh = h;
+    if (lite) frameLite();
+    if ((lite || portrait) && !intro && !(flight && flight.isActive())) Object.assign(rig, poses[focus || 'idle']);
   }
   new ResizeObserver(resize).observe(hero);
   resize();

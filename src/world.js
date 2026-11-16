@@ -9,10 +9,10 @@ import { buildStations } from './stations.js';
 // every content section (stations.js) and the contact vignette. The camera travels between them as you scroll:
 // its pose is a pure function of a scrubbed scroll value, so scrolling up replays the exact path backwards.
 //   lite (phones/tablets): section stations only, lower pixel ratio, no shadows.
-export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {}, getScroll, lite = false, journeyCount, photoUrl }) {
+export function createWorld({ canvas, worldEl, studioEl, contactEl, sections = {}, getScroll, lite = false, tablet = false, journeyCount, photoUrl }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, alpha: true, powerPreference: lite ? 'default' : 'high-performance' });
   // full device pixel ratio like a native render (capped at 2); phones 1.5. Steps down by itself if frames run slow.
-  const maxDpr = Math.min(devicePixelRatio || 1, lite ? 1.5 : 2), minDpr = Math.min(maxDpr, lite ? 1 : 1.25);
+  const maxDpr = Math.min(devicePixelRatio || 1, lite || tablet ? 1.5 : 2), minDpr = Math.min(maxDpr, lite || tablet ? 1 : 1.25);
   let dpr = maxDpr; renderer.setPixelRatio(dpr);
   renderer.shadowMap.enabled = !lite; renderer.shadowMap.type = THREE.VSMShadowMap;
   renderer.localClippingEnabled = true;

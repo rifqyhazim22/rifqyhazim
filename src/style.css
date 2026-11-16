@@ -215,6 +215,11 @@ button { font:inherit; color:inherit; background:none; border:0; cursor:pointer;
 .tools .pill, .topic { background:var(--bg); }
 .tools .pill { padding:16px 26px; font-size:17px; line-height:1.2; min-height:52px; display:inline-flex; align-items:center; box-sizing:border-box; }
 @keyframes marq { to { transform:translateX(-50%); } }
+/* Running strip: one row of the same big chips, looping slowly (cloned set is aria-hidden). Paused on hover/focus. */
+.marquee.is-running { max-width:none; padding:0; overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); }
+.marquee.is-running .marquee-track { display:flex; flex-wrap:nowrap; gap:0; width:max-content; padding:4px 0; animation:marq 42s linear infinite; }
+.marquee.is-running .marquee-track .pill { width:auto; white-space:nowrap; flex:none; margin-right:16px; } /* margin, not gap: the -50% loop lands exactly */
+.marquee.is-running:hover .marquee-track, .marquee.is-running:focus-within .marquee-track { animation-play-state:paused; }
 
 /* Topics */
 .topics { list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
@@ -1003,15 +1008,17 @@ input[data-vol]:focus-visible { outline:2px solid var(--teal); outline-offset:4p
 .s3d.has-world #foto .wrap > * { position: relative; }
 .s3d.has-world #foto .sec-title,
 .s3d.has-world #foto .photo-intro { opacity: 1; transform: none; }
-/* Phone / no-3D: keep the compact 2D block, but give it a full frame so "Sekarang" does not peek in */
-html.no-webgl #foto, html.lite #foto {
+/* No-3D (reduced motion / weak device / no WebGL): keep the compact 2D block, but give it a full frame so "Sekarang" does not peek in.
+   Phones (lite) keep their 3D windows: the laptop zoom on the photo and the stations above the sections. */
+html.no-webgl #foto {
   min-height: calc(100svh - 72px);
   display: flex;
   align-items: center;
 }
-html.no-webgl #foto .wrap, html.lite #foto .wrap { width: 100%; }
-/* Lite / no-WebGL never get .s3d, so they have no 3D window. Keep --win at 0 if both classes ever coexist. */
-html.lite [data-s3d], html.no-webgl [data-s3d] { --win: 0px; }
+html.no-webgl #foto .wrap { width: 100%; }
+html.no-webgl [data-s3d] { --win: 0px; }
+/* Never a blank hero: whenever the 3D desk is not on screen (pending, failed or off), the 2D desk is. */
+html.no-webgl .scene2d, html.three-pending:not(.three-ready) .scene2d { display: block; }
 .s3d.has-world #proyek { --win: 28vh; }
 /* intro under the photo: name, role, base (same facts as the hero and contact) */
 .photo-intro { display:flex; flex-direction:column; align-items:center; gap:6px; margin:18px auto 28px; text-align:center; }

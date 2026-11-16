@@ -24,12 +24,18 @@ const root = document.documentElement;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const small = matchMedia('(max-width: 900px)').matches;
 const coarse = matchMedia('(pointer: coarse)').matches;
-// 3D tier: full (desktop), lite (phones/tablets that can take it), off (reduced motion, save-data, weak device, no WebGL)
+// 3D tier: full (desktop/laptop), tablet (iPad and up: desktop world, touch controls), lite (phones), off (reduced motion, save-data, weak device, no WebGL)
 const conn = navigator.connection || {};
 const weak = conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory < 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
 const tierParam = new URLSearchParams(location.search).get('tier');
-// normally decided before first paint by /theme-init.js (with a WebGL check); computed here only as a fallback
-const tier = root.dataset.tier || tierParam || (reduced ? 'off' : (small || coarse) ? (weak ? 'off' : 'lite') : 'full');
+// same rule as /theme-init.js (which normally decides it before first paint): screen size + input + capability, never touch alone
+const mm = (q) => matchMedia(q).matches;
+const desk = mm('(any-pointer: fine)') || mm('(any-hover: hover)');
+const bigTouch = Math.min(screen.width, screen.height) >= 768 && (innerWidth > 900 || mm('(orientation: landscape)'));
+const tier = root.dataset.tier || tierParam || (reduced ? 'off'
+  : desk && innerWidth > 900 ? 'full'
+  : !desk && bigTouch ? (weak ? 'off' : 'tablet')
+  : weak ? 'off' : 'lite');
 root.dataset.tier = tier;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -432,16 +438,19 @@ document.querySelectorAll('.wm-name').forEach((el) => {
   });
 });
 // ---------- 3D, deferred: the page paints and becomes interactive with the 2D desk first.
-// Three.js loads only on the desktop "full" tier (after the intro, on interaction / scroll towards the studio,
-// or once the browser is idle a few seconds after load). Phones and tablets stay on the 2D desk and 2D kerja
-// sprites, so they never download the three.js chunk. Built in steps, yielding to the main thread between them.
-const want3D = tier === 'full';
+// Three.js + the scene load after the intro (so never before first paint), on the first interaction / scroll towards
+// the studio, or once the browser is idle a few seconds after load, and are built in steps (yielding to the main thread).
+// The 2D desk is on screen until then and crossfades into the 3D one when it is ready. Layout is decided up front.
+// full = desktop/laptop (incl. touchscreen laptops), tablet = the desktop world with touch controls (pixel ratio capped
+// at 1.5, fewer floaters), lite = phones (lighter 3D: hero + section stations).
+const want3D = tier !== 'off';
+const tablet = tier === 'tablet';
 const yieldMain = () => new Promise((r) => (window.scheduler?.yield ? window.scheduler.yield().then(r) : setTimeout(r, 0)));
 let studioP = 0, worldReady = false;
 // scroll position fed to the 3D world, smoothed by a ScrollTrigger scrub (the camera eases after the page, both ways)
 const drive = { y: scrollY };
 function fallback2D() {
-  root.classList.remove('three-pending', 'lite', 'has-world', 's3d'); root.classList.add('no-webgl');
+  root.classList.remove('three-pending', 'lite', 'tablet', 'has-world', 's3d'); root.classList.add('no-webgl');
   if (!root.classList.contains('motion')) return;
   $$('.holo-card').forEach((c) => { c.classList.add('on'); gsap.to(c, { opacity: 1, y: 0, duration: 0.5 }); });
   ScrollTrigger.refresh();
@@ -455,7 +464,7 @@ async function load3D() {
   const lite = tier === 'lite';
   try {
     scene = mod.createScene({
-      canvas: $('#heroCanvas'), hero: lite ? $('.hero-stage') : $('.hero'), bubble: $('#bubble'), lite,
+      canvas: $('#heroCanvas'), hero: lite ? $('.hero-stage') : $('.hero'), bubble: $('#bubble'), lite, tablet,
       onCharTap: (k) => { const v = k || (chips.find((c) => c.classList.contains('is-active'))?.dataset.version === 'iklan' ? 'agen' : 'iklan'); pick(v, v === 'iklan' ? 620 : 840); },
       onCharHover: (k) => { cursor?.setExternal(k); scene.setFocus(k); if (k) { markChip(k); tick(k === 'iklan' ? 620 : 840); } },
     });
@@ -479,7 +488,7 @@ async function load3D() {
   try {
     world = createWorld({
       canvas: $('#worldCanvas'), worldEl: $('#world'), studioEl: lite ? null : $('#kerja'), contactEl: lite ? null : $('#ngobrol'),
-      sections, getScroll: () => drive.y, lite, journeyCount: $$('#journey li').length, photoUrl: '/img/rifqy-desk.webp',
+      sections, getScroll: () => drive.y, lite, tablet, journeyCount: $$('#journey li').length, photoUrl: '/img/rifqy-desk.webp',
     });
   } catch { return; }
   window.__world = world;
@@ -507,12 +516,13 @@ function schedule3D() {
 async function boot() {
   if (!reduced) root.classList.add('motion');
   if (want3D) {
-    root.classList.add('three-pending', 'has-world', 's3d');
-    root.classList.remove('no-webgl', 'lite');
+    root.classList.add('three-pending', 's3d');
+    root.classList.remove('no-webgl');
+    if (tier === 'lite') { root.classList.add('lite'); root.classList.remove('has-world'); $('.hero-stage').prepend($('#heroCanvas'), $('#bubble')); }
+    else { root.classList.add('has-world'); root.classList.remove('lite'); root.classList.toggle('tablet', tablet); }
   } else {
     root.classList.add('no-webgl');
-    root.classList.remove('three-pending', 's3d', 'has-world');
-    if (tier === 'lite') root.classList.add('lite');
+    root.classList.remove('three-pending', 's3d', 'has-world', 'tablet');
   }
 
   if (root.classList.contains('has-world')) {
@@ -647,18 +657,16 @@ async function boot() {
   pre.classList.add('pre-2d');
   const c = { v: 0 };
   const tl = gsap.timeline();
-  if (small) gsap.set('.identity, .identity .line > span', { opacity: 1, yPercent: 0 });
   tl.fromTo('.pre-name .wm-l, .pre-name .wm-dot', { yPercent: -140, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: 'bounce.out', stagger: 0.045 }, 0.1)
     .fromTo('.pre-name .wm-name > .wm-br', { x: (i) => (i ? 40 : -40), opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0.75)
     .fromTo('.pre-name .wm-sub', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 1.1);
-  // Mobile: shorter count and lift, and the identity starts as the sheet rises so hero type can be LCP
-  // instead of the "100" counter. Desktop timing stays close to the original intro.
-  const countDur = small ? 0.7 : 1.5, liftDur = small ? 0.45 : 0.8, liftDelay = small ? '+=0.05' : '+=0.35';
+  // Original intro timing on every device (phones slightly shorter, as before the 15 Nov speed pass).
+  const countDur = small ? 1.1 : 1.5, liftDur = small ? 0.6 : 0.8, liftDelay = small ? '+=0.15' : '+=0.35';
   tl.to(c, { v: 100, duration: countDur, ease: 'power2.inOut', onUpdate: () => { counter.textContent = String(Math.round(c.v)).padStart(3, '0'); } }, 0)
     .to(pre, { yPercent: -100, borderBottomLeftRadius: 48, borderBottomRightRadius: 48, duration: liftDur, ease: 'smooth' }, liftDelay)
     .add(() => { pre.remove(); if (want3D) schedule3D(); bindScrollFX(); })
-    .from('.identity .line > span', { yPercent: small ? 0 : 110, duration: small ? 0.01 : 0.9, ease: 'power4.out', stagger: 0.12 }, small ? '<' : '-=0.5')
-    .to(small ? '[data-hero]:not(.identity)' : '[data-hero]', { opacity: 1, duration: 0.01 }, '<')
+    .from('.identity .line > span', { yPercent: 110, duration: 0.9, ease: 'power4.out', stagger: 0.12 }, '-=0.5')
+    .to('[data-hero]', { opacity: 1, duration: 0.01 }, '<')
     .add(() => clocks.reveal(), '<0.5')
     .fromTo('.avail, .positioning, .lead, .version-chips, .time-card', { y: 24, clipPath: 'inset(-30% -30% 100% -30%)' }, { y: 0, clipPath: 'inset(-30% -30% -30% -30%)', duration: 0.7, ease: 'power3.out', stagger: 0.08, clearProps: 'clipPath' }, '<0.2')
     .fromTo('.scene2d', { y: 16, clipPath: 'inset(0% 0% 100% 0%)' }, { y: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power3.out', clearProps: 'transform,clipPath' }, '<')
@@ -753,6 +761,12 @@ if (!reduced && matchMedia('(pointer: fine)').matches) {
   });
 }
 
-// Tools chips wrap in place (no infinite marquee clone).
+// Tools: a gentle running strip (the set is cloned once, aria-hidden, for a seamless loop). Reduced motion keeps
+// the static wrapped chips.
+if (!reduced) {
+  const mq = $('#marquee');
+  mq.append(...[...mq.children].map((n) => { const c = n.cloneNode(true); c.setAttribute('aria-hidden', 'true'); return c; }));
+  mq.parentElement.classList.add('is-running');
+}
 
 boot();

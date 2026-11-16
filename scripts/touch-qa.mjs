@@ -1,8 +1,9 @@
-// Touch QA (Chromium touch emulation): ripple, card swipe + long-press peek, hero drag-to-pick, chip throw, sticker spin, scroll-back reset. Needs `npm run build && npm run preview`. Screenshots go to /workspace/shots/.
+// Touch QA (Chromium touch emulation): phone must get the lite 3D hero and iPad the tablet tier (desktop world, touch drag); ripple, card swipe + long-press peek, hero drag-to-pick, chip throw, sticker spin, scroll-back reset. Needs `npm run build && npm run preview`. Screenshots go to /workspace/shots/.
 import { chromium } from 'playwright';
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const O = '/workspace/shots/touch-'; const errs = [];
-const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+const O = '/workspace/shots/touch-'; const errs = []; const fails = [];
+const must = (name, pass, info = '') => { console.log(pass ? 'PASS' : 'FAIL', name, info); if (!pass) fails.push(name); };
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
 const p = await ctx.newPage();
 p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 const cdp = await ctx.newCDPSession(p);
@@ -22,12 +23,13 @@ await p.waitForFunction(() => document.documentElement.classList.contains('touch
 await p.waitForFunction(() => window.__scene, null, { timeout: 60000 }).catch(() => console.log('no 3D scene'));
 await p.waitForTimeout(5000);
 console.log('tier', await p.evaluate(() => document.documentElement.dataset.tier + ' ' + document.documentElement.className));
+must('phone: lite tier with the 3D hero', await p.evaluate(() => document.documentElement.dataset.tier === 'lite' && !!window.__scene && document.documentElement.classList.contains('three-ready')));
 // 1 ripple
 await touch('touchStart', 200, 300); await p.waitForTimeout(120); await p.screenshot({ path: O + '1-ripple.png' }); await touch('touchEnd');
 console.log('ripples', await p.evaluate(() => [...document.querySelectorAll('.tap-ripple.fx')].map((r) => r.style.getPropertyValue('--rc')).join(',')));
 // 3 hero 3D drag: find ads char screen pos via hitTest scan
 const hit = await p.evaluate(() => { const c = document.getElementById('heroCanvas').getBoundingClientRect(); for (let y = c.top + 10; y < c.bottom; y += 8) for (let x = c.left + 5; x < c.left + c.width / 2; x += 8) if (window.__scene.hitTest(x, y) === 'iklan') return { x, y }; return null; });
-console.log('ads hit', hit);
+console.log('ads hit', hit); must('phone: 3D characters can be grabbed', !!hit);
 if (hit) {
   await drag(hit.x, hit.y, 60, 4, { end: false }); await p.screenshot({ path: O + '3a-hero-drag-small.png' }); await touch('touchEnd'); await p.waitForTimeout(1200);
   console.log('after small drop chip', await p.evaluate(() => document.querySelector('.vchip.is-active').dataset.version));
@@ -74,4 +76,29 @@ console.log('sticker rotation', r1, '->', await p.evaluate(() => window.__gsap.g
 // scroll-back reset after touch pick
 await p.evaluate(() => window.__lenis.scrollTo(0, { duration: 1.2, force: true })); await p.waitForTimeout(2500);
 console.log('back top chip', await p.evaluate(() => document.querySelector('.vchip.is-active').dataset.version)); await p.screenshot({ path: O + '7-back-top-reset.png' });
+// iPad: the tablet tier (desktop world) with touch controls: drag a 3D character to pick it
+{
+  const tctx = await b.newContext({ viewport: { width: 1024, height: 1366 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
+  const tp = await tctx.newPage();
+  tp.on('pageerror', (e) => errs.push(e.message));
+  await tp.goto('http://127.0.0.1:4173/');
+  await tp.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
+  await tp.touchscreen.tap(1016, 120);
+  await tp.waitForFunction(() => window.__scene && document.documentElement.classList.contains('three-ready'), null, { timeout: 60000 }).catch(() => {});
+  await tp.waitForTimeout(4000);
+  const st = await tp.evaluate(() => ({ tier: document.documentElement.dataset.tier, cls: document.documentElement.className, scene: !!window.__scene }));
+  must('ipad: tablet tier, desktop world, 3D hero', st.tier === 'tablet' && /has-world/.test(st.cls) && /tablet/.test(st.cls) && st.scene, JSON.stringify(st));
+  const tcdp = await tctx.newCDPSession(tp);
+  const tt = (type, x, y) => tcdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+  const th = await tp.evaluate(() => { const c = document.getElementById('heroCanvas').getBoundingClientRect(); for (let y = Math.max(0, c.top) + 10; y < Math.min(innerHeight, c.bottom); y += 8) for (let x = c.left + 5; x < c.right - 5; x += 8) if (window.__scene.hitTest(x, y) === 'agen') return { x, y }; return null; });
+  must('ipad: 3D characters can be grabbed', !!th, JSON.stringify(th));
+  if (th) {
+    await tt('touchStart', th.x, th.y); for (let i = 1; i <= 10; i++) { await tt('touchMove', th.x - 20 * i, th.y); await tp.waitForTimeout(16); }
+    await tp.screenshot({ path: O + 'ipad-drag.png' }); await tt('touchEnd'); await tp.waitForTimeout(1500);
+    console.log('ipad chip after drag', await tp.evaluate(() => document.querySelector('.vchip.is-active').dataset.version));
+  }
+  await tctx.close();
+}
 console.log('ERRORS', errs); await b.close();
+console.log(fails.length ? `FAILED: ${fails.join(' | ')}` : 'touch QA: all checks passed');
+process.exit(fails.length || errs.length ? 1 : 0);
