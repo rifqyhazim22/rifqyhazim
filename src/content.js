@@ -69,7 +69,7 @@ export const PROJECTS = {
     id: {
       title: 'MediMart, marketplace apotek',
       lead: 'Marketplace apotek online dengan peran admin, seller, dan buyer, plus chat realtime.',
-      stats: [['3', 'peran'], ['Realtime', 'chat'], ['Jan–Mar', 'dibuat 2026']],
+      stats: [['3', 'peran'], ['Chat', 'realtime'], ['Q1', 'dibuat 2026']],
       ctx: ['Marketplace apotek online, dibuat Jan–Mar 2026.'],
       did: ['Peran admin, seller, dan buyer.', 'Katalog, keranjang, checkout, chat realtime, integrasi pembayaran.'],
       res: ['Katalog, keranjang, checkout, chat realtime, dan integrasi pembayaran.'],
@@ -77,7 +77,7 @@ export const PROJECTS = {
     en: {
       title: 'MediMart, pharmacy marketplace',
       lead: 'An online pharmacy marketplace with admin, seller, and buyer roles, plus realtime chat.',
-      stats: [['3', 'roles'], ['Realtime', 'chat'], ['Jan–Mar', 'built 2026']],
+      stats: [['3', 'roles'], ['Chat', 'realtime'], ['Q1', 'built 2026']],
       ctx: ['An online pharmacy marketplace, built Jan–Mar 2026.'],
       did: ['Admin, seller, and buyer roles.', 'Catalog, cart, checkout, realtime chat, payment integration.'],
       res: ['Catalog, cart, checkout, realtime chat, and payment integration.'],
