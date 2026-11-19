@@ -97,8 +97,8 @@ export const FAQ = [
   {
     q: { id: 'Siapa Rifqy?', en: 'Who is Rifqy?' },
     a: {
-      id: 'Rifqy Hazim adalah Ads & E-commerce Specialist dan AI Agent Orchestrator. Ia menumbuhkan penjualan marketplace lewat iklan berbasis data, dan merancang serta mengarahkan tim AI agent untuk menjalankan operasinya. Sejak 16 Nov 2026 ia juga Ads Operation di The Circle Digital (TCD).',
-      en: 'Rifqy Hazim is an Ads & E-commerce Specialist and AI Agent Orchestrator. He grows marketplace sales through data-led advertising, and designs and directs an AI-agent team to run those operations. Since 16 November 2026, he has also been in Ads Operation at The Circle Digital (TCD).',
+      id: 'Rifqy Hazim adalah Ads & E-commerce Specialist dan AI Agent Orchestrator. Ia menumbuhkan penjualan marketplace lewat iklan berbasis data, dan merancang serta mengarahkan tim AI agent untuk menjalankan operasinya. Sejak 16 Nov 2026 ia Ads Operation di The Circle Digital (TCD) secara hybrid, sambil tetap freelance mengelola iklan marketplace di Tiga Pilar Utama Karya Sentosa.',
+      en: 'Rifqy Hazim is an Ads & E-commerce Specialist and AI Agent Orchestrator. He grows marketplace sales through data-led advertising, and designs and directs an AI-agent team to run those operations. Since 16 November 2026, he has been in Ads Operation at The Circle Digital (TCD), hybrid, while freelancing on marketplace ads at Tiga Pilar Utama Karya Sentosa.',
     },
   },
   {
@@ -141,6 +141,6 @@ export const JOURNEY = [
   { yr: { id: 'Apr – Mei 2025', en: 'Apr – May 2025' }, org: 'PT. Lautan Berlian Utama Motors (Mitsubishi)', role: { id: 'Intern Sales Consultant', en: 'Intern Sales Consultant' } },
   { yr: { id: 'Jul – Nov 2025', en: 'Jul – Nov 2025' }, org: 'The Social Linked', role: { id: 'AI Content Creator · Prompt & Context Engineer', en: 'AI Content Creator · Prompt & Context Engineer' } },
   { yr: { id: 'Jan – Mar 2026', en: 'Jan – Mar 2026' }, org: 'Hacktiv8 Full Stack Developer Bootcamp', role: { id: 'Sertifikat partisipasi', en: 'Participation certificate' } },
-  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: 'Tiga Pilar Utama Karya Sentosa', role: { id: 'Ads & E-commerce Specialist · Vice Director (Freelance)', en: 'Ads & E-commerce Specialist · Vice Director (Freelance)' }, now: true },
-  { yr: { id: 'Nov 2026 – sekarang', en: 'Nov 2026 – present' }, org: 'The Circle Digital (TCD)', role: { id: 'Ads Operation (Hybrid)', en: 'Ads Operation (Hybrid)' }, now: true },
+  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: 'Tiga Pilar Utama Karya Sentosa', role: { id: 'Ads & E-commerce Specialist', en: 'Ads & E-commerce Specialist' }, type: { id: 'Freelance', en: 'Freelance' }, now: true },
+  { yr: { id: 'Nov 2026 – sekarang', en: 'Nov 2026 – present' }, org: 'The Circle Digital (TCD)', role: { id: 'Ads Operation', en: 'Ads Operation' }, type: { id: 'Hybrid', en: 'Hybrid' }, now: true },
 ];

@@ -144,7 +144,9 @@ const llms = () => {
     + P.map((p) => `- **${p.en.title}** (${p.year}): ${p.en.lead}${p.links ? ' ' + p.links.map(([n, h]) => `[${n}](${h})`).join(' · ') : ''}`).join('\n')
     + `\n\n## How I work\n` + ['w1', 'w2', 'w3'].map((k) => `- **${en[k + '.h']}**: ${en[k + '.p']}`).join('\n')
     + `\n\n## FAQ\n` + FAQ.map((f) => `- **${f.q.en}** ${f.a.en}`).join('\n')
-    + `\n\n## Journey\n` + JOURNEY.map((j) => `- ${j.yr.en}: ${orgName(j, 'en')}${j.role ? ` (${j.role.en})` : ''}`).join('\n')
+    + `\n\n## Journey\n` + JOURNEY.map((j) => j.role && j.type
+      ? `- ${j.role.en} · ${orgName(j, 'en')} · ${j.type.en} · ${j.yr.en}`
+      : `- ${j.yr.en}: ${orgName(j, 'en')}${j.role ? ` (${j.role.en})` : ''}`).join('\n')
     + `\n\n## Contact & profiles\n- Email: ${CONTACT.email}\n` + CONTACT.links.filter((x) => !x.flag || FLAGS[x.flag]).map((x) => `- [${x.label}](${x.href})`).join('\n')
     + (dl.length ? '\n' + dl.join('\n') : '') + '\n';
 };

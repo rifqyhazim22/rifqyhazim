@@ -4,8 +4,8 @@ Source for **https://rifqyhazim.vercel.app**, the personal portfolio of Rifqy Ha
 
 ## Current roles
 
-- **Tiga Pilar Utama Karya Sentosa** — Ads & E-commerce Specialist · Vice Director (Freelance), Apr 2026 – present
-- **The Circle Digital (TCD)** — Ads Operation (Hybrid), Nov 2026 – present
+- **Tiga Pilar Utama Karya Sentosa** — Ads & E-commerce Specialist · Freelance · Apr 2026 – present
+- **The Circle Digital (TCD)** — Ads Operation · Hybrid · Nov 2026 – present
 
 There are no analytics, trackers, ads or third-party scripts.
 
