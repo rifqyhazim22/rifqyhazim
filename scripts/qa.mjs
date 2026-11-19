@@ -6,7 +6,7 @@ const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignor
 const W = [[360, 740], [390, 844], [768, 1024], [1024, 768], [1180, 820], [1440, 900], [1920, 1080]];
 // Extra forbidden words (e.g. private names) can be passed without committing them: FORBID_EXTRA="word1,word2"
 const EXTRA = (process.env.FORBID_EXTRA || '').split(',').map((w) => w.trim()).filter(Boolean).map((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'));
-const FORBID = [...EXTRA, /ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b/i, /\bChatGPT\b/i, /\bGPT-?\d/i, /\[[^\]\n]{2,40}\]/, /lorem/i, /TODO/];
+const FORBID = [...EXTRA, /ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b/i, /\bChatGPT\b/i, /\bGPT-?\d/i, /\[[^\]\n]{2,40}\]/, /lorem/i, /TODO/, /Tiga Pilar/i, /Tiga Pillar/i, /BEP(?:\s*ROAS)?\s*5\b/i];
 const b = await chromium.launch({ args });
 const CSP_HOOK = () => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP violation: ${e.violatedDirective} ${e.blockedURI}`));
 const out = []; const errs = [];

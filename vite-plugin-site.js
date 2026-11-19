@@ -11,7 +11,7 @@ import { SITE_URL, GOOGLE_SITE_VERIFICATION, BING_SITE_VERIFICATION, YANDEX_VERI
 import { securityHeaders, vercelConfig } from './security-headers.js';
 import { dict, applyDict, SEO } from './src/i18n.js';
 import { renderStatic } from './src/render-content.js';
-import { PROJECTS, JOURNEY, CONTACT, FLAGS, DOWNLOADS } from './src/content.js';
+import { PROJECTS, JOURNEY, CONTACT, FLAGS, DOWNLOADS, orgName } from './src/content.js';
 
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 // Unique per build: baked into the bundle (__BUILD_ID__) and written to /version.json for the auto-update check.
@@ -43,7 +43,7 @@ function jsonLd(l) {
     {
       '@type': 'Person', '@id': person, name: 'Rifqy Hazim', url: url('/'), image: url(OG_IMG[l]),
       description: PERSON_DESC[l], address: { '@type': 'PostalAddress', addressLocality: LOCATION.locality, addressCountry: LOCATION.country }, jobTitle: ['Ads & E-commerce Specialist', 'AI Agent Orchestrator'], email: `mailto:${CONTACT.email}`,
-      worksFor: { '@type': 'Organization', name: JOURNEY.find((j) => j.now).org },
+      worksFor: { '@type': 'Organization', name: orgName(JOURNEY.find((j) => j.now), l) },
       alumniOf: { '@type': 'CollegeOrUniversity', name: 'UIN Syarif Hidayatullah Jakarta' },
       knowsAbout: KNOWS_ABOUT,
       sameAs,
@@ -134,7 +134,7 @@ const llms = () => {
     + `Website: ${url('/')} (Indonesian) · ${url('/en/')} (English)\n\n## Expertise\n${KNOWS_ABOUT.map((k) => `- ${k}`).join('\n')}\n\n## Selected projects\n`
     + P.map((p) => `- **${p.en.title}** (${p.year}): ${p.en.lead}${p.links ? ' ' + p.links.map(([n, h]) => `[${n}](${h})`).join(' · ') : ''}`).join('\n')
     + `\n\n## How I work\n` + ['w1', 'w2', 'w3'].map((k) => `- **${en[k + '.h']}**: ${en[k + '.p']}`).join('\n')
-    + `\n\n## Journey\n` + JOURNEY.map((j) => `- ${j.yr.en}: ${j.org}${j.role ? ` (${j.role.en})` : ''}`).join('\n')
+    + `\n\n## Journey\n` + JOURNEY.map((j) => `- ${j.yr.en}: ${orgName(j, 'en')}${j.role ? ` (${j.role.en})` : ''}`).join('\n')
     + `\n\n## Contact & profiles\n- Email: ${CONTACT.email}\n` + CONTACT.links.filter((x) => !x.flag || FLAGS[x.flag]).map((x) => `- [${x.label}](${x.href})`).join('\n')
     + (dl.length ? '\n' + dl.join('\n') : '') + '\n';
 };

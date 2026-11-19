@@ -1,6 +1,6 @@
 // Puts the verified content (content.js) into the page and keeps it in sync with ID/EN.
 // Structure is built once (so scroll reveals keep their state); only text is swapped on a language change.
-import { FLAGS, CONTACT, PROJECTS, JOURNEY, DOWNLOADS } from './content.js';
+import { FLAGS, CONTACT, PROJECTS, JOURNEY, DOWNLOADS, orgName } from './content.js';
 import { lang, onLang, dict } from './i18n.js';
 
 const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -54,6 +54,7 @@ function renderText(l = lang(), doc = document) {
   doc.querySelectorAll('#journey li').forEach((li, i) => {
     const j = JOURNEY[i];
     li.querySelector('.yr').textContent = j.yr[l];
+    const o = li.querySelector('.jr-org'); if (o) o.textContent = orgName(j, l);
     const r = li.querySelector('.jr-role'); if (r) r.textContent = j.role[l];
     const n = li.querySelector('.jr-now'); if (n) n.textContent = l === 'id' ? 'sekarang' : 'now';
   });
@@ -66,7 +67,7 @@ export function renderStatic(doc, l) {
   doc.querySelectorAll('[data-flag]').forEach((el) => { if (FLAGS[el.getAttribute('data-flag')]) el.removeAttribute('hidden'); else el.setAttribute('hidden', ''); });
   doc.querySelectorAll('[data-flag-off]').forEach((el) => { if (FLAGS[el.getAttribute('data-flag-off')]) el.setAttribute('hidden', ''); else el.removeAttribute('hidden'); });
   doc.getElementById('journey').innerHTML = JOURNEY.map((j, i) => `<li data-reveal${j.now ? ' class="is-now"' : ''}><span class="jdot" style="--c:${COLORS[i % COLORS.length]}"></span><span class="num mono">${String(i + 1).padStart(2, '0')}</span><span class="mono yr"></span>`
-    + `<span class="role"><span class="jr-org">${esc(j.org)}</span>${j.now ? ' <span class="jr-now mono"></span>' : ''}${j.role ? '<span class="jr-role"></span>' : ''}</span></li>`).join('');
+    + `<span class="role"><span class="jr-org">${esc(orgName(j, l))}</span>${j.now ? ' <span class="jr-now mono"></span>' : ''}${j.role ? '<span class="jr-role"></span>' : ''}</span></li>`).join('');
   doc.getElementById('profileLinks').innerHTML = CONTACT.links.filter((x) => !x.flag || FLAGS[x.flag])
     .map((x) => `<li><a class="profile-link" href="${x.href}" target="_blank" rel="me noopener noreferrer" data-cursor="link">${ICONS[x.key]}<span>${x.label}</span><span class="arr" aria-hidden="true">↗</span></a></li>`).join('');
   renderText(l, doc);
