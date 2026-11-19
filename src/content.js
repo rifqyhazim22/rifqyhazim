@@ -92,6 +92,38 @@ export function orgName(j, l = 'en') {
   return typeof j.org === 'string' ? j.org : j.org[l];
 }
 
+// Public FAQ (third person, so AI engines can quote it). Facts already on the site only.
+export const FAQ = [
+  {
+    q: { id: 'Siapa Rifqy Hazim?', en: 'Who is Rifqy Hazim?' },
+    a: {
+      id: 'Rifqy Hazim adalah Ads & E-commerce Specialist · AI Agent Orchestrator, berbasis di Jakarta, Indonesia.',
+      en: 'Rifqy Hazim is an Ads & E-commerce Specialist · AI Agent Orchestrator, based in Jakarta, Indonesia.',
+    },
+  },
+  {
+    q: { id: 'Apa yang dikerjakannya?', en: 'What does he do?' },
+    a: {
+      id: 'Dia pegang iklan dan penjualan 3 toko marketplace di Shopee (Iklan Produk) dan Tokopedia/TikTok (GMV Max), bareng tim AI agent yang dia rancang sendiri. Di sisi lain, dia juga buka jasa freelance sebagai AI Agent Orchestrator & Data Specialist.',
+      en: 'He runs ads and sales for 3 marketplace stores on Shopee (Product Ads) and Tokopedia/TikTok (GMV Max), with an AI agent team he designed himself. On the side, he also takes freelance work as an AI Agent Orchestrator & Data Specialist.',
+    },
+  },
+  {
+    q: { id: 'Kenapa ROAS dihitung dari invoice?', en: 'Why is ROAS calculated from invoices?' },
+    a: {
+      id: 'ROAS dihitung dari invoice asli, bukan cuma dari dashboard iklan, supaya angkanya mencerminkan penjualan yang benar-benar terjadi. ROAS riil 5,82, di atas titik balik modal setiap bulan (rentang 5,15–6,68).',
+      en: 'ROAS is calculated from real invoices, not just the ads dashboard, so the figure reflects sales that actually happened. Real ROAS is 5.82, above break-even every month (range 5.15–6.68).',
+    },
+  },
+  {
+    q: { id: 'Bagaimana cara menghubungi atau menyewa jasanya?', en: 'How can I contact or hire him?' },
+    a: {
+      id: 'Kirim email ke rifqyhazim22@gmail.com, atau lewat Upwork dan LinkedIn. Dia berbasis di Jakarta, Indonesia, dan terbuka untuk kolaborasi.',
+      en: 'Email rifqyhazim22@gmail.com, or reach him on Upwork and LinkedIn. He is based in Jakarta, Indonesia, and open for collabs.',
+    },
+  },
+];
+
 // Journey, exactly as verified (order kept).
 export const JOURNEY = [
   { yr: { id: '2008–2015', en: '2008–2015' }, org: 'SDIT Tunas Harapan Ilahi' },

@@ -15,8 +15,9 @@ const ALLOWED = {
   ProfilePage: ['@type', '@id', 'url', 'name', 'description', 'inLanguage', 'isPartOf', 'mainEntity', 'about', 'dateModified', 'hasPart'],
   Person: ['@type', '@id', 'name', 'url', 'image', 'description', 'address', 'jobTitle', 'email', 'worksFor', 'alumniOf', 'knowsAbout', 'sameAs'],
   CreativeWork: ['@type', '@id', 'name', 'description', 'dateCreated', 'inLanguage', 'keywords', 'creator', 'url', 'sameAs'],
+  FAQPage: ['@type', '@id', 'url', 'name', 'inLanguage', 'mainEntity', 'isPartOf'],
 };
-const REQUIRED = { WebSite: ['url', 'name'], ProfilePage: ['url', 'name', 'mainEntity'], Person: ['name', 'url'], CreativeWork: ['name', 'description', 'creator'] };
+const REQUIRED = { WebSite: ['url', 'name'], ProfilePage: ['url', 'name', 'mainEntity'], Person: ['name', 'url'], CreativeWork: ['name', 'description', 'creator'], FAQPage: ['name', 'mainEntity'] };
 const isAbs = (u) => /^https:\/\/[^\s]+$/.test(u) || /^mailto:[^\s@]+@[^\s@]+$/.test(u);
 
 function checkPage(file, lang, path) {
@@ -50,6 +51,7 @@ function checkPage(file, lang, path) {
   // critical content present in the static HTML (no JS)
   const text = d.body.textContent.replace(/\s+/g, ' ');
   const must = ['Rifqy', 'Ads & E-commerce Specialist · AI Agent Orchestrator', 'MediMart', lang === 'en' ? 'Private company' : 'Perusahaan swasta', 'UIN Syarif Hidayatullah Jakarta', 'rifqyhazim22@gmail.com', 'LinkedIn', 'GitHub', PROJECTS.a[lang].title, PROJECTS.b[lang].title, PROJECTS.c[lang].title, lang === 'en' ? 'Based in Jakarta, Indonesia' : 'Berbasis di Jakarta, Indonesia', lang === 'en' ? 'Download Portfolio' : 'Unduh Portofolio'];
+  must.push(lang === 'en' ? 'FAQ' : 'Tanya jawab', lang === 'en' ? 'Who is Rifqy Hazim?' : 'Siapa Rifqy Hazim?');
   must.forEach((m) => { if (!text.includes(m)) E(`${tag} static HTML is missing "${m}"`); });
   FORBID.forEach((r) => { if (r.test(text) || r.test(d.head.innerHTML)) E(`${tag} forbidden copy ${r}`); });
   if (/\[[^\]\n]{2,40}\]/.test(text)) E(`${tag} bracket placeholder left: ${text.match(/\[[^\]\n]{2,40}\]/)[0]}`);
@@ -63,7 +65,7 @@ function checkPage(file, lang, path) {
     if (j['@context'] !== 'https://schema.org') E(`${tag} @context`);
     const nodes = j['@graph'] || [], ids = new Set(nodes.map((n) => n['@id']));
     const types = nodes.map((n) => n['@type']);
-    ['WebSite', 'ProfilePage', 'Person'].forEach((t) => { if (!types.includes(t)) E(`${tag} JSON-LD missing ${t}`); });
+    ['WebSite', 'ProfilePage', 'Person', 'FAQPage'].forEach((t) => { if (!types.includes(t)) E(`${tag} JSON-LD missing ${t}`); });
     if (types.filter((t) => t === 'CreativeWork').length !== 3) E(`${tag} expected 3 CreativeWork projects`);
     const refs = []; const walk = (o) => { if (Array.isArray(o)) o.forEach(walk); else if (o && typeof o === 'object') { if (Object.keys(o).length === 1 && o['@id']) refs.push(o['@id']); Object.values(o).forEach(walk); } }; walk(nodes);
     refs.forEach((r) => { if (!ids.has(r)) E(`${tag} JSON-LD dangling @id ${r}`); });

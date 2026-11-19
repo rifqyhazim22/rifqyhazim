@@ -709,7 +709,7 @@ async function boot() {
   // move backwards, so it comes in again on the way down. Children keep their own [data-reveal] timing on top.
   // The studio stage is sticky in the world layout, so it never gets a transform: only its heading eases in.
   const withWorld = root.classList.contains('has-world');
-  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#ngobrol', '.site-footer'];
+  const secs = ['.now', '#proyek', '.tools', '#tanya', '#jejak', '#faq', '#ngobrol', '.site-footer'];
   if (!withWorld) { secs.unshift('#foto'); secs.splice(2, 0, '#kerja'); }
   secs.map((s) => $(s)).filter(Boolean).forEach((sec) => {
     const clip = !small; // phones: transform + opacity only (no clip-path repaint of big boxes)
