@@ -16,25 +16,48 @@ async function drag(x, y, dx, dy, { steps = 10, hold = 0, end = true, shot } = {
 }
 const box = (sel) => p.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; }, sel);
 const scrollTo = (sel, off = 0.3) => p.evaluate(([s, o]) => { const el = document.querySelector(s); const y = el.getBoundingClientRect().top + scrollY - innerHeight * o; window.__lenis ? window.__lenis.scrollTo(y, { immediate: true, force: true }) : scrollTo(0, y); }, [sel, off]);
+const scanHit = (kind, mode) => ({ kind, mode, fn: ({ kind, mode }) => {
+  const s = window.__scene, el = document.getElementById('heroCanvas');
+  if (!s?.hitTest || !el) return null;
+  const c = el.getBoundingClientRect();
+  const y0 = Math.max(0, c.top) + 10, y1 = Math.min(innerHeight, c.bottom);
+  for (let y = y0; y < y1; y += 8) {
+    if (mode === 'left') { for (let x = c.left + 5; x < c.left + c.width / 2; x += 8) if (s.hitTest(x, y) === kind) return { x, y }; }
+    else if (mode === 'right') { for (let x = c.right - 5; x > c.left + c.width / 2; x -= 8) if (s.hitTest(x, y) === kind) return { x, y }; }
+    else { for (let x = c.left + 5; x < c.right - 5; x += 8) if (s.hitTest(x, y) === kind) return { x, y }; }
+  }
+  return null;
+}});
+async function waitHit(page, kind, mode, timeout = 10000) {
+  const start = Date.now();
+  const { fn, ...arg } = { ...scanHit(kind, mode) };
+  while (Date.now() - start < timeout) {
+    const hit = await page.evaluate(fn, arg);
+    if (hit) return hit;
+    await page.waitForTimeout(250);
+  }
+  return null;
+}
+
 await p.goto('http://127.0.0.1:4173/');
 await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
 await touch('touchStart', 380, 830); await touch('touchEnd');
 await p.waitForFunction(() => document.documentElement.classList.contains('touch-fx'), null, { timeout: 10000 });
 await p.waitForFunction(() => window.__scene, null, { timeout: 60000 }).catch(() => console.log('no 3D scene'));
-await p.waitForTimeout(5000);
+await p.waitForFunction(() => document.documentElement.classList.contains('three-ready'), null, { timeout: 60000 }).catch(() => {});
 console.log('tier', await p.evaluate(() => document.documentElement.dataset.tier + ' ' + document.documentElement.className));
 must('phone: lite tier with the 3D hero', await p.evaluate(() => document.documentElement.dataset.tier === 'lite' && !!window.__scene && document.documentElement.classList.contains('three-ready')));
 // 1 ripple
 await touch('touchStart', 200, 300); await p.waitForTimeout(120); await p.screenshot({ path: O + '1-ripple.png' }); await touch('touchEnd');
 console.log('ripples', await p.evaluate(() => [...document.querySelectorAll('.tap-ripple.fx')].map((r) => r.style.getPropertyValue('--rc')).join(',')));
-// 3 hero 3D drag: find ads char screen pos via hitTest scan
-const hit = await p.evaluate(() => { const c = document.getElementById('heroCanvas').getBoundingClientRect(); for (let y = c.top + 10; y < c.bottom; y += 8) for (let x = c.left + 5; x < c.left + c.width / 2; x += 8) if (window.__scene.hitTest(x, y) === 'iklan') return { x, y }; return null; });
+// 3 hero 3D drag: poll until intro ends and the ads char is hittable (up to 10s)
+const hit = await waitHit(p, 'iklan', 'left');
 console.log('ads hit', hit); must('phone: 3D characters can be grabbed', !!hit);
 if (hit) {
   await drag(hit.x, hit.y, 60, 4, { end: false }); await p.screenshot({ path: O + '3a-hero-drag-small.png' }); await touch('touchEnd'); await p.waitForTimeout(1200);
   console.log('after small drop chip', await p.evaluate(() => document.querySelector('.vchip.is-active').dataset.version));
   // agent to the centre
-  const hitA = await p.evaluate(() => { const c = document.getElementById('heroCanvas').getBoundingClientRect(); for (let y = c.top + 10; y < c.bottom; y += 8) for (let x = c.right - 5; x > c.left + c.width / 2; x -= 8) if (window.__scene.hitTest(x, y) === 'agen') return { x, y }; return null; });
+  const hitA = await waitHit(p, 'agen', 'right');
   await drag(hitA.x, hitA.y, -150, 6, { end: false }); await p.screenshot({ path: O + '3b-hero-drag-agent-centre.png' }); await touch('touchEnd'); await p.waitForTimeout(1400);
   await p.screenshot({ path: O + '3c-hero-agent-picked.png' });
   console.log('after centre drop chip', await p.evaluate(() => document.querySelector('.vchip.is-active').dataset.version));
@@ -85,12 +108,12 @@ console.log('back top chip', await p.evaluate(() => document.querySelector('.vch
   await tp.waitForSelector('#preloader', { state: 'detached', timeout: 90000 });
   await tp.touchscreen.tap(1016, 120);
   await tp.waitForFunction(() => window.__scene && document.documentElement.classList.contains('three-ready'), null, { timeout: 60000 }).catch(() => {});
-  await tp.waitForTimeout(4000);
   const st = await tp.evaluate(() => ({ tier: document.documentElement.dataset.tier, cls: document.documentElement.className, scene: !!window.__scene }));
   must('ipad: tablet tier, desktop world, 3D hero', st.tier === 'tablet' && /has-world/.test(st.cls) && /tablet/.test(st.cls) && st.scene, JSON.stringify(st));
   const tcdp = await tctx.newCDPSession(tp);
   const tt = (type, x, y) => tcdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
-  const th = await tp.evaluate(() => { const c = document.getElementById('heroCanvas').getBoundingClientRect(); for (let y = Math.max(0, c.top) + 10; y < Math.min(innerHeight, c.bottom); y += 8) for (let x = c.left + 5; x < c.right - 5; x += 8) if (window.__scene.hitTest(x, y) === 'agen') return { x, y }; return null; });
+  // poll until hero intro finishes and the agent is hittable (intro lasts ~4.3s; up to 10s)
+  const th = await waitHit(tp, 'agen', 'full');
   must('ipad: 3D characters can be grabbed', !!th, JSON.stringify(th));
   if (th) {
     await tt('touchStart', th.x, th.y); for (let i = 1; i <= 10; i++) { await tt('touchMove', th.x - 20 * i, th.y); await tp.waitForTimeout(16); }
