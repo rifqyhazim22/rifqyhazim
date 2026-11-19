@@ -89,16 +89,12 @@ export const PROJECTS = {
 
 if (KEYWORD_COPY) for (const [k, v] of Object.entries(PROPOSALS.projects)) for (const l of ['id', 'en']) Object.assign(PROJECTS[k][l], v[l]); // keyword copy proposals (off by default)
 
-// PENDING Calvin (19 Nov 2026): exact public wording still being confirmed. Hidden until FLAGS.adSpendMultiple is true.
-// Proposed lines, no rupiah amounts. Source: Romy's check that this is average monthly ad spend vs Jan–Mar 2026, not revenue.
-export const AD_SPEND_MULTIPLE = {
-  id: '~7,8× rata-rata biaya iklan per bulan (basis Jan–Mar 2026)',
-  en: '~7.8× average monthly ad spend (vs Jan–Mar 2026 baseline)',
-};
-if (FLAGS.adSpendMultiple) {
-  PROJECTS.a.id.res.push(AD_SPEND_MULTIPLE.id);
-  PROJECTS.a.en.res.push(AD_SPEND_MULTIPLE.en);
-}
+// PENDING Calvin (19 Nov 2026): exact public wording still being confirmed.
+// FLAGS.adSpendMultiple is off, so these lines are not on the site and must stay comments until wording is confirmed:
+//   id: '~7,8× rata-rata biaya iklan per bulan (basis Jan–Mar 2026)'
+//   en: '~7.8× average monthly ad spend (vs Jan–Mar 2026 baseline)'
+// Source: Romy's check that this is average monthly ad spend vs Jan–Mar 2026, not revenue.
+// When confirmed, set FLAGS.adSpendMultiple to true and push those two lines into PROJECTS.a[lang].res.
 
 
 /** Org label for a language. Most are the same in ID/EN; a few are a `{ id, en }` pair. */
