@@ -82,12 +82,12 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   await go(p, 'ngobrol'); await p.waitForTimeout(1500);
   const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }), p.click('[data-dl="contact"] a[data-dl-key="cv"]')]);
   const fpath = await dl.path(); const size = (await import('node:fs')).statSync(fpath).size;
-  ok('clicking Unduh CV downloads CV-Rifqy-Hazim-2026.pdf', dl.suggestedFilename() === 'CV-Rifqy-Hazim-2026.pdf' && size === 861279, `${dl.suggestedFilename()} ${size}B`);
+  ok('clicking Unduh CV downloads CV-Rifqy-Hazim-2026.pdf', dl.suggestedFilename() === 'CV-Rifqy-Hazim-2026.pdf' && size === 889315, `${dl.suggestedFilename()} ${size}B`);
   const pdfResp = await p.request.get('http://127.0.0.1:4173/cv/CV-Rifqy-Hazim-2026.pdf');
   ok('CV served 200 application/pdf', pdfResp.status() === 200 && pdfResp.headers()['content-type'] === 'application/pdf', `${pdfResp.status()} ${pdfResp.headers()['content-type']}`);
   const [dl2] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }), p.click('[data-dl="contact"] a[data-dl-key="porto"]')]);
   const size2 = (await import('node:fs')).statSync(await dl2.path()).size;
-  ok('clicking Unduh Portofolio downloads Portofolio-Rifqy-Hazim-2026.pdf', dl2.suggestedFilename() === 'Portofolio-Rifqy-Hazim-2026.pdf' && size2 === 2572319, `${dl2.suggestedFilename()} ${size2}B`);
+  ok('clicking Unduh Portofolio downloads Portofolio-Rifqy-Hazim-2026.pdf', dl2.suggestedFilename() === 'Portofolio-Rifqy-Hazim-2026.pdf' && size2 === 10728193, `${dl2.suggestedFilename()} ${size2}B`);
   const pr2 = await p.request.get('http://127.0.0.1:4173/portofolio/Portofolio-Rifqy-Hazim-2026.pdf');
   ok('Portfolio served 200 application/pdf', pr2.status() === 200 && pr2.headers()['content-type'] === 'application/pdf', `${pr2.status()} ${pr2.headers()['content-type']}`);
   await p.click('.site-header [data-lang-btn="en"]'); await p.waitForTimeout(600);
