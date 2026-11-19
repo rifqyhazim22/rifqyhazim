@@ -34,9 +34,9 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   ok('cursor states: link + versi', /is-link/.test(c1) && /is-agen/.test(c2), `${c1} | ${c2}`);
   await p.mouse.move(700, 600);
   // nav wipe
-  await p.click('.nav a[href="#jejak"]'); await p.waitForTimeout(400);
-  const wiping = await p.evaluate(() => document.getElementById('wipe').classList.contains('run'));
-  await p.waitForTimeout(1600);
+  await p.click('.nav a[href="#jejak"]');
+  const wiping = await p.waitForFunction(() => document.getElementById('wipe').classList.contains('run'), null, { timeout: 5000 }).then(() => true, () => false);
+  await p.waitForFunction(() => Math.abs(document.getElementById('jejak').getBoundingClientRect().top - 70) < 30, null, { timeout: 5000 }).catch(() => {});
   const jy = await p.evaluate(() => Math.abs(document.getElementById('jejak').getBoundingClientRect().top - 70));
   ok('nav click runs full-screen wipe and lands on section', wiping && jy < 30, `wipe=${wiping} offset=${jy}`);
   // detail
@@ -57,10 +57,11 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   await p.goto('http://127.0.0.1:4173/'); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }); await p.waitForTimeout(1500);
   // theme
   const th = async () => p.evaluate(() => [document.documentElement.dataset.theme, document.documentElement.dataset.themePref].join('/'));
-  await p.click('.site-header [data-theme-btn="dark"]'); await p.waitForTimeout(300); const t1 = await th();
-  await p.click('.site-header [data-theme-btn="light"]'); await p.waitForTimeout(300); const t2 = await th();
-  await p.click('.site-header [data-theme-btn="auto"]'); await p.emulateMedia({ colorScheme: 'dark' }); await p.waitForTimeout(300); const t3 = await th();
-  await p.reload(); await p.waitForTimeout(800); const t4 = await th();
+  const waitTheme = (theme, pref) => p.waitForFunction(([theme, pref]) => document.documentElement.dataset.theme === theme && document.documentElement.dataset.themePref === pref, [theme, pref], { timeout: 5000 }).catch(() => {});
+  await p.click('.site-header [data-theme-btn="dark"]'); await waitTheme('dark', 'dark'); const t1 = await th();
+  await p.click('.site-header [data-theme-btn="light"]'); await waitTheme('light', 'light'); const t2 = await th();
+  await p.click('.site-header [data-theme-btn="auto"]'); await p.emulateMedia({ colorScheme: 'dark' }); await waitTheme('dark', 'auto'); const t3 = await th();
+  await p.reload(); await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }).catch(() => {}); await waitTheme('dark', 'auto'); const t4 = await th();
   ok('theme 3-state (dark, light, auto follows system, reload = auto)', t1 === 'dark/dark' && t2 === 'light/light' && t3 === 'dark/auto' && t4 === 'dark/auto', [t1, t2, t3, t4].join(' '));
   ok('no theme in localStorage', await p.evaluate(() => localStorage.getItem('rh-theme') === null));
   await p.waitForSelector('#preloader', { state: 'detached', timeout: 90000 }); await p.waitForTimeout(1500);
