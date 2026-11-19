@@ -33,9 +33,10 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   const c1 = await cur('.nav a[href="#kerja"]'), c2 = await cur('.vchip[data-version="agen"]');
   ok('cursor states: link + versi', /is-link/.test(c1) && /is-agen/.test(c2), `${c1} | ${c2}`);
   await p.mouse.move(700, 600);
-  // nav wipe
+  // nav wipe (watch for .run before the click so a short animation is not missed)
+  const wipeSeen = p.waitForFunction(() => document.getElementById('wipe').classList.contains('run'), null, { timeout: 5000 }).then(() => true, () => false);
   await p.click('.nav a[href="#jejak"]');
-  const wiping = await p.waitForFunction(() => document.getElementById('wipe').classList.contains('run'), null, { timeout: 5000 }).then(() => true, () => false);
+  const wiping = await wipeSeen;
   await p.waitForFunction(() => Math.abs(document.getElementById('jejak').getBoundingClientRect().top - 70) < 30, null, { timeout: 5000 }).catch(() => {});
   const jy = await p.evaluate(() => Math.abs(document.getElementById('jejak').getBoundingClientRect().top - 70));
   ok('nav click runs full-screen wipe and lands on section', wiping && jy < 30, `wipe=${wiping} offset=${jy}`);
@@ -44,8 +45,8 @@ const go = (p, id) => p.evaluate((id) => { const y = document.getElementById(id)
   await p.click('[data-project] >> nth=0'); await p.waitForTimeout(1600);
   let s = await st(p); ok('project card opens detail + pushes #proyek/a', !s.hidden && s.hash === '#proyek/a', JSON.stringify(s));
   ok('detail focus moves to back button', await p.waitForFunction(() => document.activeElement.id === 'dBack', null, { timeout: 4000 }).then(() => true, () => false));
-  await p.keyboard.press('Escape'); await p.waitForTimeout(1300); s = await st(p); ok('Esc closes detail', s.hidden && s.hash === '', JSON.stringify(s));
-  await p.click('[data-project] >> nth=1'); await p.waitForTimeout(1600); await p.goBack(); await p.waitForTimeout(1300); s = await st(p); ok('browser back closes detail', s.hidden, JSON.stringify(s));
+  await p.keyboard.press('Escape'); await p.waitForFunction(() => document.getElementById('detail').hidden && location.hash === '', null, { timeout: 5000 }).catch(() => {}); s = await st(p); ok('Esc closes detail', s.hidden && s.hash === '', JSON.stringify(s));
+  await p.click('[data-project] >> nth=1'); await p.waitForTimeout(1600); await p.goBack(); await p.waitForFunction(() => document.getElementById('detail').hidden, null, { timeout: 5000 }).catch(() => {}); s = await st(p); ok('browser back closes detail', s.hidden, JSON.stringify(s));
   await p.click('[data-project] >> nth=2'); await p.waitForTimeout(1600);
   const cLinks = await p.evaluate(() => ({ n: document.querySelectorAll('#dLinks a').length, hidden: document.getElementById('dLinksRow').hidden, text: document.getElementById('dRes').innerText }));
   ok('MediMart detail has no demo or repo links', cLinks.n === 0 && cLinks.hidden && !/demo|repo/i.test(cLinks.text), JSON.stringify(cLinks));
