@@ -6,6 +6,8 @@ export const FLAGS = {
   upwork: true,        // confirmed Nov 2026
   cvDownload: true,         // public CV (no phone/TTL); the public PDF is at public/cv/CV-Rifqy-Hazim-2026.pdf
   portfolioDownload: true, // ON once the public PDF is at public/portofolio/Portofolio-Rifqy-Hazim-2026.pdf
+  // PENDING Calvin (19 Nov 2026): confirm the exact public wording before turning this on.
+  adSpendMultiple: false,
 };
 // Download buttons (header, contact, mobile menu). Flag OFF = disabled chip with "segera".
 export const DOWNLOADS = [
@@ -86,6 +88,18 @@ export const PROJECTS = {
 };
 
 if (KEYWORD_COPY) for (const [k, v] of Object.entries(PROPOSALS.projects)) for (const l of ['id', 'en']) Object.assign(PROJECTS[k][l], v[l]); // keyword copy proposals (off by default)
+
+// PENDING Calvin (19 Nov 2026): exact public wording still being confirmed. Hidden until FLAGS.adSpendMultiple is true.
+// Proposed lines, no rupiah amounts. Source: Romy's check that this is average monthly ad spend vs Jan–Mar 2026, not revenue.
+export const AD_SPEND_MULTIPLE = {
+  id: '~7,8× rata-rata biaya iklan per bulan (basis Jan–Mar 2026)',
+  en: '~7.8× average monthly ad spend (vs Jan–Mar 2026 baseline)',
+};
+if (FLAGS.adSpendMultiple) {
+  PROJECTS.a.id.res.push(AD_SPEND_MULTIPLE.id);
+  PROJECTS.a.en.res.push(AD_SPEND_MULTIPLE.en);
+}
+
 
 /** Org label for a language. Most are the same in ID/EN; a few are a `{ id, en }` pair. */
 export function orgName(j, l = 'en') {
