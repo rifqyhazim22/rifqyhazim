@@ -137,10 +137,10 @@ export const JOURNEY = [
   { yr: { id: '2015–2018', en: '2015–2018' }, org: 'MTs Husnul Khotimah' },
   { yr: { id: '2018–2021', en: '2018–2021' }, org: 'MA Husnul Khotimah' },
   { yr: { id: '2022–2025', en: '2022–2025' }, org: 'UIN Syarif Hidayatullah Jakarta, FDI' },
-  { yr: { id: 'Sep 2024 – Apr 2026', en: 'Sep 2024 – Apr 2026' }, org: { id: 'Perusahaan swasta', en: 'Private company' }, role: { id: 'Strategy & Networking / Vice Director / Marketing Executive', en: 'Strategy & Networking / Vice Director / Marketing Executive' } },
+  { yr: { id: 'Sep 2024 – Apr 2026', en: 'Sep 2024 – Apr 2026' }, org: 'Tiga Pilar Utama Karya Sentosa', role: { id: 'Strategy & Networking / Vice Director / Marketing Executive', en: 'Strategy & Networking / Vice Director / Marketing Executive' } },
   { yr: { id: 'Apr – Mei 2025', en: 'Apr – May 2025' }, org: 'PT. Lautan Berlian Utama Motors (Mitsubishi)', role: { id: 'Intern Sales Consultant', en: 'Intern Sales Consultant' } },
   { yr: { id: 'Jul – Nov 2025', en: 'Jul – Nov 2025' }, org: 'The Social Linked', role: { id: 'AI Content Creator · Prompt & Context Engineer', en: 'AI Content Creator · Prompt & Context Engineer' } },
   { yr: { id: 'Jan – Mar 2026', en: 'Jan – Mar 2026' }, org: 'Hacktiv8 Full Stack Developer Bootcamp', role: { id: 'Sertifikat partisipasi', en: 'Participation certificate' } },
-  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: { id: 'Perusahaan swasta', en: 'Private company' }, role: { id: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)', en: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)' }, now: true },
-  { yr: { id: 'Nov 2026 – sekarang', en: 'Nov 2026 – present' }, org: 'The Circle Digital (TCD)', role: { id: 'Ads Operation', en: 'Ads Operation' }, now: true },
+  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: 'Tiga Pilar Utama Karya Sentosa', role: { id: 'Ads & E-commerce Specialist · Vice Director (Freelance)', en: 'Ads & E-commerce Specialist · Vice Director (Freelance)' }, now: true },
+  { yr: { id: 'Nov 2026 – sekarang', en: 'Nov 2026 – present' }, org: 'The Circle Digital (TCD)', role: { id: 'Ads Operation (Hybrid)', en: 'Ads Operation (Hybrid)' }, now: true },
 ];

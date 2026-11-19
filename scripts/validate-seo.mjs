@@ -8,7 +8,7 @@ const errors = [], warns = [], info = [];
 const E = (m) => errors.push(m), W = (m) => warns.push(m);
 // Extra forbidden words (e.g. private names) can be passed without committing them: FORBID_EXTRA="word1,word2"
 const EXTRA = (process.env.FORBID_EXTRA || '').split(',').map((w) => w.trim()).filter(Boolean).map((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'));
-const FORBID = [/ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b(?!Bot)/i, /ChatGPT/i, /lorem/i, /\bTODO\b/, /Tiga Pilar/i, /Tiga Pillar/i, /BEP(?:\s*ROAS)?\s*5\b/i, /BlendAi/i, ...EXTRA];
+const FORBID = [/ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b(?!Bot)/i, /ChatGPT/i, /lorem/i, /\bTODO\b/, /PT\.?\s*Tiga Pilar/i, /Tiga Pillar/i, /BEP(?:\s*ROAS)?\s*5\b/i, /BlendAi/i, ...EXTRA];
 // schema.org properties allowed per type (subset we use), so typos and invented props are caught
 const ALLOWED = {
   WebSite: ['@type', '@id', 'url', 'name', 'inLanguage', 'publisher'],
@@ -50,7 +50,7 @@ function checkPage(file, lang, path) {
   });
   // critical content present in the static HTML (no JS)
   const text = d.body.textContent.replace(/\s+/g, ' ');
-  const must = ['Rifqy', 'Ads & E-commerce Specialist · AI Agent Orchestrator', 'MediMart', lang === 'en' ? 'Private company' : 'Perusahaan swasta', 'The Circle Digital (TCD)', 'Ads Operation', 'UIN Syarif Hidayatullah Jakarta', 'rifqyhazim22@gmail.com', 'LinkedIn', 'GitHub', PROJECTS.a[lang].title, PROJECTS.b[lang].title, PROJECTS.c[lang].title, lang === 'en' ? 'Based in Jakarta, Indonesia' : 'Berbasis di Jakarta, Indonesia', lang === 'en' ? 'Download Portfolio' : 'Unduh Portofolio'];
+  const must = ['Rifqy', 'Ads & E-commerce Specialist · AI Agent Orchestrator', 'MediMart', 'Tiga Pilar Utama Karya Sentosa', 'The Circle Digital (TCD)', 'Ads Operation', 'UIN Syarif Hidayatullah Jakarta', 'rifqyhazim22@gmail.com', 'LinkedIn', 'GitHub', PROJECTS.a[lang].title, PROJECTS.b[lang].title, PROJECTS.c[lang].title, lang === 'en' ? 'Based in Jakarta, Indonesia' : 'Berbasis di Jakarta, Indonesia', lang === 'en' ? 'Download Portfolio' : 'Unduh Portofolio'];
   must.push(lang === 'en' ? 'FAQ' : 'Tanya jawab', lang === 'en' ? 'Who is Rifqy?' : 'Siapa Rifqy?');
   must.forEach((m) => { if (!text.includes(m)) E(`${tag} static HTML is missing "${m}"`); });
   FORBID.forEach((r) => { if (r.test(text) || r.test(d.head.innerHTML)) E(`${tag} forbidden copy ${r}`); });
