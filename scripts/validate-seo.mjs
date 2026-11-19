@@ -8,7 +8,7 @@ const errors = [], warns = [], info = [];
 const E = (m) => errors.push(m), W = (m) => warns.push(m);
 // Extra forbidden words (e.g. private names) can be passed without committing them: FORBID_EXTRA="word1,word2"
 const EXTRA = (process.env.FORBID_EXTRA || '').split(',').map((w) => w.trim()).filter(Boolean).map((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'));
-const FORBID = [/ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b(?!Bot)/i, /ChatGPT/i, /lorem/i, /\bTODO\b/, /PT\.?\s*Tiga Pilar/i, /Tiga Pillar/i, /BEP(?:\s*ROAS)?\s*5\b/i, /BlendAi/i, ...EXTRA];
+const FORBID = [/ROAS naik/i, /\bRp\.?\s?\d/i, /rupiah/i, /\bClaude\b(?!Bot)/i, /ChatGPT/i, /lorem/i, /\bTODO\b/, /PT\.?\s*Tiga Pilar/i, /Tiga Pillar/i, /BEP(?:\s*ROAS)?\s*5\b/i, /BlendAi/i, /5[,.]15\s*[–\-]\s*6[,.]68/, ...EXTRA];
 // schema.org properties allowed per type (subset we use), so typos and invented props are caught
 const ALLOWED = {
   WebSite: ['@type', '@id', 'url', 'name', 'inLanguage', 'publisher'],
