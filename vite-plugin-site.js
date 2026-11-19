@@ -51,7 +51,7 @@ function jsonLd(l) {
     {
       '@type': 'Person', '@id': person, name: 'Rifqy Hazim', url: url('/'), image: url(OG_IMG[l]),
       description: PERSON_DESC[l], address: { '@type': 'PostalAddress', addressLocality: LOCATION.locality, addressCountry: LOCATION.country }, jobTitle: ['Ads & E-commerce Specialist', 'AI Agent Orchestrator'], email: `mailto:${CONTACT.email}`,
-      worksFor: { '@type': 'Organization', name: orgName(JOURNEY.find((j) => j.now), l) },
+      worksFor: JOURNEY.filter((j) => j.now).map((j) => ({ '@type': 'Organization', name: orgName(j, l) })),
       alumniOf: { '@type': 'CollegeOrUniversity', name: 'UIN Syarif Hidayatullah Jakarta' },
       knowsAbout: KNOWS_ABOUT,
       sameAs,

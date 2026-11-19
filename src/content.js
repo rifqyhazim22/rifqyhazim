@@ -141,6 +141,6 @@ export const JOURNEY = [
   { yr: { id: 'Apr – Mei 2025', en: 'Apr – May 2025' }, org: 'PT. Lautan Berlian Utama Motors (Mitsubishi)', role: { id: 'Intern Sales Consultant', en: 'Intern Sales Consultant' } },
   { yr: { id: 'Jul – Nov 2025', en: 'Jul – Nov 2025' }, org: 'The Social Linked', role: { id: 'AI Content Creator · Prompt & Context Engineer', en: 'AI Content Creator · Prompt & Context Engineer' } },
   { yr: { id: 'Jan – Mar 2026', en: 'Jan – Mar 2026' }, org: 'Hacktiv8 Full Stack Developer Bootcamp', role: { id: 'Sertifikat partisipasi', en: 'Participation certificate' } },
-  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: { id: 'Perusahaan swasta', en: 'Private company' }, role: { id: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)', en: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)' } },
+  { yr: { id: 'Apr 2026 – sekarang', en: 'Apr 2026 – present' }, org: { id: 'Perusahaan swasta', en: 'Private company' }, role: { id: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)', en: 'Ads & E-commerce Specialist · Vice Director (Freelance, Hybrid)' }, now: true },
   { yr: { id: 'Nov 2026 – sekarang', en: 'Nov 2026 – present' }, org: 'The Circle Digital (TCD)', role: { id: 'Ads Operation', en: 'Ads Operation' }, now: true },
 ];
