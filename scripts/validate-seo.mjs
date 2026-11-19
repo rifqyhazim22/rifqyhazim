@@ -51,7 +51,7 @@ function checkPage(file, lang, path) {
   // critical content present in the static HTML (no JS)
   const text = d.body.textContent.replace(/\s+/g, ' ');
   const must = ['Rifqy', 'Ads & E-commerce Specialist · AI Agent Orchestrator', 'MediMart', lang === 'en' ? 'Private company' : 'Perusahaan swasta', 'The Circle Digital (TCD)', 'Ads Operation', 'UIN Syarif Hidayatullah Jakarta', 'rifqyhazim22@gmail.com', 'LinkedIn', 'GitHub', PROJECTS.a[lang].title, PROJECTS.b[lang].title, PROJECTS.c[lang].title, lang === 'en' ? 'Based in Jakarta, Indonesia' : 'Berbasis di Jakarta, Indonesia', lang === 'en' ? 'Download Portfolio' : 'Unduh Portofolio'];
-  must.push(lang === 'en' ? 'FAQ' : 'Tanya jawab', lang === 'en' ? 'Who is Rifqy Hazim?' : 'Siapa Rifqy Hazim?');
+  must.push(lang === 'en' ? 'FAQ' : 'Tanya jawab', lang === 'en' ? 'Who is Rifqy?' : 'Siapa Rifqy?');
   must.forEach((m) => { if (!text.includes(m)) E(`${tag} static HTML is missing "${m}"`); });
   FORBID.forEach((r) => { if (r.test(text) || r.test(d.head.innerHTML)) E(`${tag} forbidden copy ${r}`); });
   if (/\[[^\]\n]{2,40}\]/.test(text)) E(`${tag} bracket placeholder left: ${text.match(/\[[^\]\n]{2,40}\]/)[0]}`);

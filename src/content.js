@@ -92,34 +92,41 @@ export function orgName(j, l = 'en') {
   return typeof j.org === 'string' ? j.org : j.org[l];
 }
 
-// Public FAQ (third person, so AI engines can quote it). Facts already on the site only.
+// Public FAQ (third person, so AI engines can quote it). Calvin's verified copy, with public rules applied: no BEP number, no bot names, no 5,15–6,68 range.
 export const FAQ = [
   {
-    q: { id: 'Siapa Rifqy Hazim?', en: 'Who is Rifqy Hazim?' },
+    q: { id: 'Siapa Rifqy?', en: 'Who is Rifqy?' },
     a: {
-      id: 'Rifqy Hazim adalah Ads & E-commerce Specialist · AI Agent Orchestrator, berbasis di Jakarta, Indonesia. Saat ini dia kerja sebagai Ads Operation di The Circle Digital (TCD).',
-      en: 'Rifqy Hazim is an Ads & E-commerce Specialist · AI Agent Orchestrator, based in Jakarta, Indonesia. He currently works as Ads Operation at The Circle Digital (TCD).',
+      id: 'Rifqy Hazim adalah Ads & E-commerce Specialist dan AI Agent Orchestrator. Ia menumbuhkan penjualan marketplace lewat iklan berbasis data, dan merancang serta mengarahkan tim AI agent untuk menjalankan operasinya. Sejak 16 Nov 2026 ia juga Ads Operation di The Circle Digital (TCD).',
+      en: 'Rifqy Hazim is an Ads & E-commerce Specialist and AI Agent Orchestrator. He grows marketplace sales through data-led advertising, and designs and directs an AI-agent team to run those operations. Since 16 November 2026, he has also been in Ads Operation at The Circle Digital (TCD).',
     },
   },
   {
-    q: { id: 'Apa yang dikerjakannya?', en: 'What does he do?' },
+    q: { id: 'Apa itu ROAS riil dari invoice?', en: 'What is real ROAS from invoices?' },
     a: {
-      id: 'Dia pegang iklan dan penjualan 3 toko marketplace di Shopee (Iklan Produk) dan Tokopedia/TikTok (GMV Max), bareng tim AI agent yang dia rancang sendiri. Di sisi lain, dia juga buka jasa freelance sebagai AI Agent Orchestrator & Data Specialist.',
-      en: 'He runs ads and sales for 3 marketplace stores on Shopee (Product Ads) and Tokopedia/TikTok (GMV Max), with an AI agent team he designed himself. On the side, he also takes freelance work as an AI Agent Orchestrator & Data Specialist.',
+      id: 'ROAS riil dihitung dari omzet invoice dibagi biaya iklan, bukan dari angka di dashboard. Dashboard masih memasukkan pesanan yang kemudian batal, jadi angkanya bisa lebih tinggi daripada uang yang benar-benar masuk.',
+      en: 'Real ROAS is invoice revenue divided by ad spend, not the dashboard figure. Dashboards still include orders that are later cancelled, so they can read higher than the revenue that actually comes in.',
     },
   },
   {
-    q: { id: 'Kenapa ROAS dihitung dari invoice?', en: 'Why is ROAS calculated from invoices?' },
+    q: { id: 'Gimana orkestrasi AI agent-nya?', en: 'How does the AI-agent orchestration work?' },
     a: {
-      id: 'ROAS dihitung dari invoice asli, bukan cuma dari dashboard iklan, supaya angkanya mencerminkan penjualan yang benar-benar terjadi. ROAS riil 5,82, di atas titik balik modal setiap bulan (rentang 5,15–6,68).',
-      en: 'ROAS is calculated from real invoices, not just the ads dashboard, so the figure reflects sales that actually happened. Real ROAS is 5.82, above break-even every month (range 5.15–6.68).',
+      id: 'Ia merancang tim AI agent, menetapkan aturannya, dan mengarahkan kerja mereka: agen koordinator, agen toko yang hanya membaca data, dan agen asisten karier. Keputusan iklan tetap di tangannya. Aturan utamanya: ROAS riil dari invoice, target di atas titik balik modal, dan data yang sudah ditutup hanya diubah dengan persetujuan manusia.',
+      en: 'He designs the AI-agent team, sets the rules, and directs their work: a coordinator agent, read-only store agents, and a career-assistant agent. Ad decisions stay with him. Core rules: real ROAS from invoices, staying above break-even, and closed-period data changed only with human approval.',
     },
   },
   {
-    q: { id: 'Bagaimana cara menghubungi atau menyewa jasanya?', en: 'How can I contact or hire him?' },
+    q: { id: 'Keahlian?', en: 'What is his expertise?' },
     a: {
-      id: 'Kirim email ke rifqyhazim22@gmail.com, atau lewat Upwork dan LinkedIn. Dia berbasis di Jakarta, Indonesia, dan terbuka untuk kolaborasi.',
-      en: 'Email rifqyhazim22@gmail.com, or reach him on Upwork and LinkedIn. He is based in Jakarta, Indonesia, and open for collabs.',
+      id: 'Iklan marketplace (Shopee Ads dan Tokopedia/TikTok GMV Max), analisis ROAS dan profit, pengelolaan multi-toko, orkestrasi AI agent, serta prompt dan context engineering.',
+      en: 'Marketplace ads (Shopee Ads and Tokopedia/TikTok GMV Max), ROAS and profit analysis, multi-store management, AI-agent orchestration, and prompt and context engineering.',
+    },
+  },
+  {
+    q: { id: 'Hasil scale-up?', en: 'What were the scale-up results?' },
+    a: {
+      id: 'Pada Mei–Okt 2026, dibanding rata-rata Jan–Mar 2026, omzet riil per bulan 3,2×, invoice per bulan +86,8%, dan profit setelah iklan per bulan +107,6%. ROAS riil periode itu 5,82, di atas titik balik modal setiap bulan. Ini scale-up penjualan yang tetap menguntungkan, bukan klaim bahwa ROAS meningkat.',
+      en: 'From May–Oct 2026, versus the Jan–Mar 2026 monthly average, real monthly revenue was 3.2×, invoices per month were up 86.8%, and profit after ads per month was up 107.6%. Real ROAS for the period was 5.82, above break-even every month. This is a profitable sales scale-up, not a claim that ROAS increased.',
     },
   },
 ];
