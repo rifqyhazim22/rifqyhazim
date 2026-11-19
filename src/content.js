@@ -6,8 +6,6 @@ export const FLAGS = {
   upwork: true,        // confirmed Nov 2026
   cvDownload: true,         // public CV (no phone/TTL); the public PDF is at public/cv/CV-Rifqy-Hazim-2026.pdf
   portfolioDownload: true, // ON once the public PDF is at public/portofolio/Portofolio-Rifqy-Hazim-2026.pdf
-  // PENDING Calvin (19 Nov 2026): confirm the exact public wording before turning this on.
-  adSpendMultiple: false,
 };
 // Download buttons (header, contact, mobile menu). Flag OFF = disabled chip with "segera".
 export const DOWNLOADS = [
@@ -34,7 +32,7 @@ export const PROJECTS = {
       ctx: ['Perusahaan material geotekstil & konstruksi. Sejak April 2026 aku pegang penuh iklan & penjualan 3 toko di Shopee (Iklan Produk) dan Tokopedia/TikTok (GMV Max).'],
       did: ['Struktur kampanye per brand & platform.', 'ROAS dihitung dari invoice asli, bukan cuma dashboard iklan.', 'Tiap kampanye diukur pakai patokan balik modal yang jelas.'],
       resNote: 'Mei–Okt 2026 dibanding Jan–Mar 2026',
-      res: ['Omzet riil rata-rata per bulan 3,20×', 'Invoice per bulan +86,8%', 'ROAS riil 5,82, di atas titik balik modal setiap bulan (rentang 5,15–6,68)', 'Margin profit bersih sekitar 24%', 'Tingkat batal 7,70%'],
+      res: ['Omzet riil rata-rata per bulan 3,20×', 'Invoice per bulan +86,8%', 'ROAS riil 5,82, di atas titik balik modal setiap bulan (rentang 5,15–6,68)', '~7,8× rata-rata biaya iklan per bulan (basis Jan–Mar 2026)', 'Margin profit bersih sekitar 24%', 'Tingkat batal 7,70%'],
     },
     en: {
       title: 'Scaling 3 marketplace stores',
@@ -43,7 +41,7 @@ export const PROJECTS = {
       ctx: ['A geotextile & construction materials company. Since April 2026 I have fully owned ads & sales for 3 stores on Shopee (Product Ads) and Tokopedia/TikTok (GMV Max).'],
       did: ['Campaign structure per brand & platform.', 'ROAS calculated from real invoices, not just the ads dashboard.', 'Every campaign measured against a clear break-even target.'],
       resNote: 'May–Oct 2026 vs Jan–Mar 2026',
-      res: ['Average monthly real revenue 3.20×', 'Invoices per month +86.8%', 'Real ROAS 5.82, above break-even every month (range 5.15–6.68)', 'Net profit margin about 24%', 'Cancellation rate 7.70%'],
+      res: ['Average monthly real revenue 3.20×', 'Invoices per month +86.8%', 'Real ROAS 5.82, above break-even every month (range 5.15–6.68)', '~7.8× average monthly ad spend (Jan–Mar 2026 baseline)', 'Net profit margin about 24%', 'Cancellation rate 7.70%'],
     },
   },
   b: {
@@ -88,14 +86,6 @@ export const PROJECTS = {
 };
 
 if (KEYWORD_COPY) for (const [k, v] of Object.entries(PROPOSALS.projects)) for (const l of ['id', 'en']) Object.assign(PROJECTS[k][l], v[l]); // keyword copy proposals (off by default)
-
-// PENDING Calvin (19 Nov 2026): exact public wording still being confirmed.
-// FLAGS.adSpendMultiple is off, so these lines are not on the site and must stay comments until wording is confirmed:
-//   id: '~7,8× rata-rata biaya iklan per bulan (basis Jan–Mar 2026)'
-//   en: '~7.8× average monthly ad spend (vs Jan–Mar 2026 baseline)'
-// Source: Romy's check that this is average monthly ad spend vs Jan–Mar 2026, not revenue.
-// When confirmed, set FLAGS.adSpendMultiple to true and push those two lines into PROJECTS.a[lang].res.
-
 
 /** Org label for a language. Most are the same in ID/EN; a few are a `{ id, en }` pair. */
 export function orgName(j, l = 'en') {
