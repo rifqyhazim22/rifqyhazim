@@ -2,6 +2,11 @@
 
 Source for **https://rifqyhazim.vercel.app**, the personal portfolio of Rifqy Hazim: Ads & E-commerce Specialist · AI Agent Orchestrator, based in Jakarta, Indonesia. The site is bilingual: Indonesian at `/`, English at `/en/`.
 
+## Current roles
+
+- **Tiga Pilar Utama Karya Sentosa** — Ads & E-commerce Specialist · Vice Director (Freelance), Apr 2026 – present
+- **The Circle Digital (TCD)** — Ads Operation (Hybrid), Nov 2026 – present
+
 There are no analytics, trackers, ads or third-party scripts.
 
 ## Stack
